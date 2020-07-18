@@ -562,9 +562,9 @@ public enum ParticleEffect {
 	 * @see ParticlePacket#sendTo(Location, double)
 	 */
 	public void display(float offsetX, float offsetY, float offsetZ, float speed, int amount, Location center, double range) throws ParticleVersionException, ParticleDataException, IllegalArgumentException {
-		if (!isSupported()) {
-			throw new ParticleVersionException("This particle effect is not supported by your server version");
-		}
+		//if (!isSupported()) {
+			//throw new ParticleVersionException("This particle effect is not supported by your server version");
+		//}
 		if (hasProperty(ParticleProperty.REQUIRES_DATA)) {
 			throw new ParticleDataException("This particle effect requires additional data");
 		}

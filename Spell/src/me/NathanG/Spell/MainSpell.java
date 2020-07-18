@@ -52,10 +52,17 @@ public class MainSpell extends JavaPlugin implements Listener{
         {
         	beamOrbs(player);
         }
+        else if(event.getAction() == Action.LEFT_CLICK_AIR && player.getInventory().getItemInMainHand().getType() == Material.STICK) 
+        {
+        	System.out.println("I tried!");
+        	blank();
+        	System.out.println("I dont work :(");
+        }
         else if(event.getAction() == Action.LEFT_CLICK_AIR)
         {
         	staticbeam();
         }
+        
     }
 	public void particleBeam(Player player){
 	    // Player's eye location is the starting location for the particle
@@ -416,9 +423,36 @@ public class MainSpell extends JavaPlugin implements Listener{
 	        
 	    }.runTaskTimer((Plugin)this, 0, 1);
 	}
-	public void angelWings()
-	{
-		
+	public void blank(){
+		World world = player.getWorld();
+		new BukkitRunnable(){
+			double t = Math.PI/4;
+			Location loc = player.getLocation();
+			public void run(){
+				t = t + 0.1*Math.PI;
+				for (double theta = 0; theta <= 2*Math.PI; theta = theta + Math.PI/32){
+					double x = t*Math.cos(theta);
+					double y = 2*Math.exp(-0.1*t) * Math.sin(t) + 1.5;
+					double z = t*Math.sin(theta);
+					loc.add(x,y,z);
+					world.spawnParticle(Particle.FIREWORKS_SPARK, loc, 1, 0, 0, 0, 0);
+					loc.subtract(x,y,z);
+					
+					theta = theta + Math.PI/64;
+					
+					x = t*Math.cos(theta);
+					y = 2*Math.exp(-0.1*t) * Math.sin(t) + 1.5;
+					z = t*Math.sin(theta);
+					loc.add(x,y,z);
+					world.spawnParticle(Particle.SPELL_WITCH, loc, 1, 0, 0, 0);
+					loc.subtract(x,y,z);
+				}
+				if (t > 20){
+					this.cancel();
+				}
+			}
+						
+		}.runTaskTimer((Plugin)this, 0, 1);
 	}
  
 }
