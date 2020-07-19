@@ -46,7 +46,7 @@ public class MainSpell extends JavaPlugin implements Listener{
         }
         else if(event.getAction() == Action.RIGHT_CLICK_AIR && player.getInventory().getItemInMainHand().getType() == Material.BLAZE_ROD)
         {
-        	particleTutorial(player);
+        	oscillation(player);
         }
         else if(event.getAction() == Action.LEFT_CLICK_AIR && player.getInventory().getItemInMainHand().getType() == Material.BLAZE_ROD)
         {
@@ -54,13 +54,16 @@ public class MainSpell extends JavaPlugin implements Listener{
         }
         else if(event.getAction() == Action.LEFT_CLICK_AIR && player.getInventory().getItemInMainHand().getType() == Material.STICK) 
         {
-        	System.out.println("I tried!");
         	blank();
-        	System.out.println("I dont work :(");
+        }
+        else if(event.getAction() == Action.RIGHT_CLICK_AIR && player.getInventory().getItemInMainHand().getType() == Material.STICK) 
+        {
+        	starBeam();
         }
         else if(event.getAction() == Action.LEFT_CLICK_AIR)
         {
         	staticbeam();
+        	
         }
         
     }
@@ -231,7 +234,7 @@ public class MainSpell extends JavaPlugin implements Listener{
 	    }.runTaskTimer((Plugin)this, 0, 1);
 	}
 	@EventHandler
-	public void particleTutorial(Player player){
+	public void oscillation(Player player){
 	    new BukkitRunnable() {
 	        // Number of points on each circle to show a particle
 	        int circlePoints = 6;
@@ -343,15 +346,15 @@ public class MainSpell extends JavaPlugin implements Listener{
 	    new BukkitRunnable() {
 	    	
 	        // Number of points to display, evenly spaced around the circle's radius
-	        int circlePoints = 3;
+	        //int circlePoints = 3;
 	        // How fast should the particles rotate around the center beam
 	        int rotationSpeed = 20;
 	        double radius = 2.5;
 	        Location startLoc = player.getEyeLocation();
 	        World world = startLoc.getWorld();
 	        final Vector dir = player.getLocation().getDirection().normalize().multiply(1);
-	        final double pitch = (startLoc.getPitch() +90.0F) * 0.017453292F;
-	        final double yaw = -startLoc.getYaw() * 0.017453292F;
+	        //final double pitch = (startLoc.getPitch() +90.0F) * 0.017453292F;
+	        //final double yaw = -startLoc.getYaw() * 0.017453292F;
 	        // Particle offset increment for each loop
 	        double increment = (2 * Math.PI) / rotationSpeed;
 	        double circlePointOffset = 0; // This is used to rotate the circle as the beam progresses
@@ -382,12 +385,13 @@ public class MainSpell extends JavaPlugin implements Listener{
 	                            world.playSound(startLoc,Sound.ENTITY_GENERIC_EXPLODE,2,1);
 	                            entity.setVelocity(entity.getVelocity().add(startLoc.getDirection().normalize().multiply(1.5)));
 	                            ((Damageable) entity).damage(100,player);
+	                            world.spawnParticle(Particle.EXPLOSION_HUGE, startLoc, 0);
 	                            this.cancel();
 	                            return;
 	                        }
 	                    }
 	                }
-	                for (int i = 0; i < circlePoints; i++) {
+	                /*for (int i = 0; i < circlePoints; i++) {
 	                    double x = radius * Math.cos(2 * Math.PI * i / circlePoints + circlePointOffset);
 	                    double z = radius * Math.sin(2 * Math.PI * i / circlePoints + circlePointOffset);
 
@@ -398,11 +402,11 @@ public class MainSpell extends JavaPlugin implements Listener{
 	                    startLoc.add(vec);
 	                    world.spawnParticle(Particle.FLAME, startLoc, 0);
 	                    startLoc.subtract(vec);
-	                }
+	                }*/
 	                
 	                // Always spawn a center particle in the same direction the player was facing.
 	                startLoc.add(dir);
-	                world.spawnParticle(Particle.FIREWORKS_SPARK, startLoc, 0);
+	                world.spawnParticle(Particle.FLAME, startLoc, 0);
 	                startLoc.subtract(dir);
 
 	                // Shrink each circle radius until it's just a point at the end of a long swirling cone
@@ -454,6 +458,69 @@ public class MainSpell extends JavaPlugin implements Listener{
 						
 		}.runTaskTimer((Plugin)this, 0, 1);
 	}
- 
+	public void starBeam()
+	{
+	    new BukkitRunnable() {	
+	        // Number of points in each circle
+	        int circlePoints = 10;
+	        // radius of the circle
+	        double radius = 5;
+	        // Starting location for the first circle will be the player's eye location
+	        Location playerLoc = player.getEyeLocation();
+	        // We need world for the spawnParticle function
+	        World world = playerLoc.getWorld();
+	        // This is the direction the player is looking, normalized to a length (speed) of 1.
+	        final Vector dir = player.getLocation().getDirection().normalize();
+	        // We need the pitch in radians for the rotate axis function
+	        // We also add 90 degrees to compensate for the non-standard use of pitch degrees in Minecraft.
+	        final double pitch = (playerLoc.getPitch() + 90.0F) * 0.017453292F;
+	        // The yaw is also converted to radians here, but we need to negate it for the function to work properly
+	        final double yaw = -playerLoc.getYaw() * 0.017453292F;
+	        // This is the distance between each point around the circumference of the circle.
+	        double increment = (2 * Math.PI) / circlePoints;
+	        // Max length of the beam..for now
+	        double length = 30;
+	        @Override
+	        public void run() {
+	            length--;
+	            if(length < 1){
+	                this.cancel();
+	                return;
+	            }
+	            // We need to loop to get all of the points on the circle every loop
+	            for (int i = 0; i < circlePoints; i++) {
+	                double angle = i * increment;
+	                double x = radius * Math.cos(angle);
+	                double z = radius * Math.sin(angle);
+	                // Convert that to a 3D Vector where the height is always 0
+	                Vector vec = new Vector(x, 0, z);
+	                // Now rotate the circle point so it's properly aligned no matter where the player is looking:
+	                rotateAroundAxisX(vec, pitch);
+	                rotateAroundAxisY(vec, yaw);
+	                // Add that vector to the player's current location
+	                playerLoc.add(vec);
+	                // Display the particle
+	                world.spawnParticle(Particle.FLAME, playerLoc, 0, 0, 0, 0); // Reminder to self - the "data" option for a (particle, location, data) is speed, not count!!
+	                // Since add() modifies the original variable, we have to subtract() it so the next calculation starts from the same location as this one.
+	                playerLoc.subtract(vec);
+	            }
+	            double radiusShrinkage = radius / (double) ((length) / 5);
+	            radius -= radiusShrinkage;
+                if (radius < 0) {
+                    this.cancel();
+                    return;
+                }
+	            /* We multiplied this by 1 already (using normalize()), ensuring the beam will
+	               travel one block away from the player each loop.
+	             */
+	            
+	            playerLoc.add(dir);
+	            
+	        }
+	        
+	    }.runTaskTimer((Plugin)this, 0, 1);
+	    staticbeam();
+	}
+	
 }
 
