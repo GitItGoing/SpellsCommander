@@ -2,5 +2,6 @@ main: me.NathanG.Spell.MainSpell
 name: Spell
 version: 1.0.0
 author: NathanG
-depend: [ProtocolLib]
 api-version: 1.15
+commands:
+  Spell:

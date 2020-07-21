@@ -1,525 +1,698 @@
 package me.NathanG.Spell;
 
-import org.bukkit.Location;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+
 import org.bukkit.Material;
 import org.bukkit.Particle;
-import org.bukkit.Sound;
 import org.bukkit.World;
-import org.bukkit.entity.Damageable;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.plugin.Plugin;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.util.Vector;
 
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+
+@SuppressWarnings("unused")
 public class MainSpell extends JavaPlugin implements Listener{
+	private Connection connection;
+	ItemStack testwand;
+	String effect;
 	Player player;
-	ConeSpell conespell = new ConeSpell();
+	List<String> args;
+	List<String> spellconfigs;
+	boolean isFinished = false;
+	boolean isParticleSet = false;
+	double damage;
+	Particle particle;
+	String name;
+	boolean inEditor = false;
+	int testWandId;
+	ParticleBeam beam;
+	Spiral spiral;
+	RadialWave wave;
+	StaticBeam staticbeam;
+	private String host, database, username, password;
+    private int port;
 	public void onEnable()
 	{
 		this.getServer().getPluginManager().registerEvents(this, this);
+		spellconfigs = new ArrayList<String>();
+		spellconfigs.add("spiral");
+		spellconfigs.add("static");
+		spellconfigs.add("beam");
+		spellconfigs.add("radialwave");
+		host = "localhost";
+        port = 3306;
+        database = "spells";
+        username = "root";
+        password = "druidmcmysql";    
+        try {    
+            openConnection();          
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 	}
 	public void onDisable()
 	{
 		
+	}
+public void openConnection() throws SQLException, ClassNotFoundException {
+    	
+	    if (connection != null && !connection.isClosed()) 
+	    {
+	    	BukkitRunnable runnable = new BukkitRunnable() {
+	    		
+	    		   @Override
+	    		   public void run(){
+	    			  
+	    		      
+	    		      
+	    		   }
+	    		};		 
+	    		runnable.runTaskAsynchronously(this);
+	    }
+	    else
+	    {
+	    	System.out.println("Failed");
+	    }
+	    synchronized (this) {
+	        if (connection != null && !connection.isClosed()) {
+	            return;
+	        }
+	        Class.forName("com.mysql.jdbc.Driver");
+	        connection = DriverManager.getConnection("jdbc:mysql://" + this.host + ":" + this.port + "/" + this.database, this.username, this.password);
+    }
+  }
+	public void spellMaker()
+	{
+		if(effect.equalsIgnoreCase("Spiral"))
+		{
+			spiral = new Spiral(player, this);
+			spiral.setDamage(damage);
+        	spiral.setParticle(particle);
+			isFinished = false;
+		}
+		if(effect.equalsIgnoreCase("Static"))
+		{
+			staticbeam = new StaticBeam(player, this);
+			staticbeam.setDamage(damage);
+        	staticbeam.setParticle(particle);
+			isFinished = false;
+		}
+		if(effect.equalsIgnoreCase("RadialWave"))
+		{
+			wave = new RadialWave(player, this);
+			wave.setDamage(damage);
+        	wave.setParticle(particle);
+			isFinished = false;
+		}
+		if(effect.equalsIgnoreCase("Beam"))
+		{
+			beam = new ParticleBeam(player, this);
+        	beam.setDamage(damage);
+        	beam.setParticle(particle);
+			isFinished = false;   
+		}
+    	//StaticBeam staticbeam = new StaticBeam(player, this);
 	}
 	@EventHandler (priority = EventPriority.MONITOR)
     // You can name the function anything you want. "clickAction" is appropriate here.
     public void clickAction(PlayerInteractEvent event) {
         // The player that triggered the event
         player = event.getPlayer();
+        //beamOrbs orbs = new beamOrbs(player, this);
+    	//DeathStarBeam deathbeam = new DeathStarBeam(player, this);
+    	//Oscillator oscill = new Oscillator(player, this);
+    	
+    	//Spiral spiral = new Spiral(player, this);
+    	//RadialWave wave = new RadialWave(player, this);
+    	//
         // If the player left-clicked the air, and has an end rod in their hand
-        if(event.getAction() == Action.LEFT_CLICK_AIR && player.getInventory().getItemInMainHand().getType() == Material.END_ROD){
-            // Display the particle beam
-            particleBeam(player);
+    	//System.out.println(parser.isEditorFinished());
+    	if(isFinished && event.getAction() == Action.LEFT_CLICK_AIR)
+    	{
+    		//System.out.println("got here");
+    		//parser = new ChatParser(player);
+    		//System.out.println("boolean is editor finished" + parser.isEditorFinished());
+    		if(isFinished)
+    		{
+    			giveItem();
+    			System.out.println(isFinished);
+    			System.out.println(damage);
+            	System.out.println("Main Spell: " + particle);
+            	spellMaker();
+    		}		
+    	}
+    	if(checker() && !isFinished)
+    	{
+    		if(effect.equalsIgnoreCase("Spiral"))
+    		{
+    			spiral.spiral();
+    		}
+    		if(effect.equalsIgnoreCase("Static"))
+    		{
+    			staticbeam.staticbeam();
+    		}
+    		if(effect.equalsIgnoreCase("RadialWave"))
+    		{
+    			wave.blank();
+    		}
+    		if(effect.equalsIgnoreCase("Beam"))
+    		{
+    			beam.particleBeam();
+    		}
         }
-        else if(event.getAction() == Action.RIGHT_CLICK_AIR && player.getInventory().getItemInMainHand().getType() == Material.END_ROD)
+        /*else if(event.getAction() == Action.RIGHT_CLICK_AIR && player.getInventory().getItemInMainHand().getType() == Material.END_ROD)
         {
-        	spiral(player);
+        	spiral.spiral();
         }
         else if(event.getAction() == Action.RIGHT_CLICK_AIR && player.getInventory().getItemInMainHand().getType() == Material.BLAZE_ROD)
         {
-        	oscillation(player);
+        	oscill.oscillation();
         }
         else if(event.getAction() == Action.LEFT_CLICK_AIR && player.getInventory().getItemInMainHand().getType() == Material.BLAZE_ROD)
         {
-        	beamOrbs(player);
+        	orbs.orbs();
         }
         else if(event.getAction() == Action.LEFT_CLICK_AIR && player.getInventory().getItemInMainHand().getType() == Material.STICK) 
         {
-        	blank();
+        	wave.blank();
         }
         else if(event.getAction() == Action.RIGHT_CLICK_AIR && player.getInventory().getItemInMainHand().getType() == Material.STICK) 
         {
-        	starBeam();
+        	deathbeam.starBeam();
         }
         else if(event.getAction() == Action.LEFT_CLICK_AIR)
         {
-        	staticbeam();
+        	staticbeam.staticbeam();
         	
-        }
+        }*/
         
     }
-	public void particleBeam(Player player){
-	    // Player's eye location is the starting location for the particle
-	    Location startLoc = player.getEyeLocation();
-
-	    // We need to clone() this location, because we will add() to it later.
-	    Location particleLoc = startLoc.clone();
-
-	    World world = startLoc.getWorld(); // We need this later to show the particle
-
-	    // dir is the Vector direction (offset from 0,0,0) the player is facing in 3D space
-	    Vector dir = startLoc.getDirection();
-
-	    /* vecOffset is used to determine where the next particle should appear
-	    We are taking the direction and multiplying it by 0.5 to make it appear 1/2 block
-	      in its continuing Vector direction.
-	    NOTE: We have to clone() because multiply() modifies the original variable!
-	    For a straight beam, we only need to calculate this once, as the direction does not change.
-	    */
-	    Vector vecOffset = dir.clone().multiply(2);
-
-	    new BukkitRunnable(){
-	        int maxBeamLength = 100; // Max beam length
-	        int beamLength = 0; // Current beam length
-
-	        // The run() function runs every X number of ticks - see below
-	        public void run(){
-	            // Search for any entities near the particle's current location
-	            for (Entity entity : world.getNearbyEntities(particleLoc, 5, 5, 5)) {
-	                // We only care about living entities. Any others will be ignored.
-	                if (entity instanceof LivingEntity) {
-	                    // Ignore player that initiated the shot
-	                    if (entity == player) {
-	                        continue;
-	                    }
-
-	                    /* Define the bounding box of the particle.
-	                    We will use 0.25 here, since the particle is moving 0.5 blocks each time.
-	                    That means the particle won't miss very small entities like chickens or bats,
-	                      as the particle bounding box covers 1/2 of the movement distance.
-	                     */
-	                    Vector particleMinVector = new Vector(
-	                            particleLoc.getX() - 0.25,
-	                            particleLoc.getY() - 0.25,
-	                            particleLoc.getZ() - 0.25);
-	                    Vector particleMaxVector = new Vector(
-	                            particleLoc.getX() + 0.25,
-	                            particleLoc.getY() + 0.25,
-	                            particleLoc.getZ() + 0.25);
-
-	                    // Now use a spigot API call to determine if the particle is inside the entity's hitbox
-	                    if(entity.getBoundingBox().overlaps(particleMinVector,particleMaxVector)){
-	                        // We have a hit!
-	                        // Display a flash at the location of the particle
-	                        world.spawnParticle(Particle.FLASH, particleLoc, 0);
-	                        // Play an explosion sound at the particle location
-	                        world.playSound(particleLoc,Sound.ENTITY_GENERIC_EXPLODE,2,1);
-
-	                        // Knock-back the entity in the same direction from where the particle is coming.
-	                        entity.setVelocity(entity.getVelocity().add(particleLoc.getDirection().normalize().multiply(1.5)));
-
-	                        // Damage the target, using the shooter as the damager
-	                        ((Damageable) entity).damage(100,player);
-	                        // Cancel the particle beam
-	                        this.cancel();
-	                        // We must return here, otherwise the code below will display one more particle.
-	                        return;
-	                    }
-	                }
-	            }
-
-	            beamLength ++; // This is the distance between each particle
-
-	            // Kill this task if the beam length is max
-	            if(beamLength >= maxBeamLength){
-	                world.spawnParticle(Particle.FLASH, particleLoc, 0);
-	                this.cancel();
-	                return;
-	            }
-
-	            // Now we add the direction vector offset to the particle's current location
-	            particleLoc.add(vecOffset);
-
-	            // Display the particle in the new location
-	            world.spawnParticle(Particle.FIREWORKS_SPARK, particleLoc, 0);
-	        }
-        }.runTaskTimer((Plugin) this, 0, 1);
-        // 0 is the delay in ticks before starting this task
-        // 1 is the how often to repeat the run() function, in ticks (20 ticks are in one second)
-	}
-	public static final Vector rotateAroundAxisX(Vector v, double angle) {
-        double cos = Math.cos(angle);
-        double sin = Math.sin(angle);
-        double y = v.getY() * cos - v.getZ() * sin;
-        double z = v.getY() * sin + v.getZ() * cos;
-        return v.setY(y).setZ(z);
-    }
-
-    public static final Vector rotateAroundAxisY(Vector v, double angle) {
-        double cos = Math.cos(angle);
-        double sin = Math.sin(angle);
-        double x = v.getX() * cos + v.getZ() * sin;
-        double z = v.getX() * -sin + v.getZ() * cos;
-        return v.setX(x).setZ(z);
-    }
-	public void spiral(Player player){
-	    new BukkitRunnable() {
-	        // Number of points in each circle
-	        int circlePoints = 10;
-	        // radius of the circle
-	        double radius = 2;
-	        // Starting location for the first circle will be the player's eye location
-	        Location playerLoc = player.getEyeLocation();
-	        // We need world for the spawnParticle function
-	        World world = playerLoc.getWorld();
-	        // This is the direction the player is looking, normalized to a length (speed) of 1.
-	        final Vector dir = player.getLocation().getDirection().normalize();
-	        // We need the pitch in radians for the rotate axis function
-	        // We also add 90 degrees to compensate for the non-standard use of pitch degrees in Minecraft.
-	        final double pitch = (playerLoc.getPitch() + 90.0F) * 0.017453292F;
-	        // The yaw is also converted to radians here, but we need to negate it for the function to work properly
-	        final double yaw = -playerLoc.getYaw() * 0.017453292F;
-	        // This is the distance between each point around the circumference of the circle.
-	        double increment = (2 * Math.PI) / circlePoints;
-	        // This is used to rotate the circle as the beam progresses
-	        double circlePointOffset = 0;
-	        // Max length of the beam..for now
-	        int beamLength = 30;
-	        // This is the amount we will shrink the circle radius with each loop
-	        double radiusShrinkage = radius / (double) ((beamLength + 2) / 2);
-	        @Override
-	        public void run() {
-	            beamLength--;
-	            if(beamLength < 1){
-	                this.cancel();
-	                return;
-	            }
-	            // We need to loop to get all of the points on the circle every loop
-	            for (int i = 0; i < circlePoints; i++) {
-	                // Angle on the circle + the offset for rotating each loop
-	                double angle = i * increment + circlePointOffset;
-	                double x = radius * Math.cos(angle);
-	                double z = radius * Math.sin(angle);
-	                // Convert that to a 3D Vector where the height is always 0
-	                Vector vec = new Vector(x, 0, z);
-	                // Now rotate the circle point so it's properly aligned no matter where the player is looking:
-	                rotateAroundAxisX(vec, pitch);
-	                rotateAroundAxisY(vec, yaw);
-	                playerLoc.add(vec);
-	                world.spawnParticle(Particle.FLAME, playerLoc, 0); // Reminder to self - the "data" option for a (particle, location, data) is speed, not count!!
-	                
-	                playerLoc.subtract(vec);
-	            }
-	            circlePointOffset += increment / 3;
-	            
-	            if (circlePointOffset >= increment) {
-	                circlePointOffset = 0;
-	            }
-	            radius -= radiusShrinkage;
-	            if (radius < 0) {
-	                this.cancel();
-	                return;
-	            }
-	            playerLoc.add(dir);
-	        }
-	    }.runTaskTimer((Plugin)this, 0, 1);
-	}
 	@EventHandler
-	public void oscillation(Player player){
-	    new BukkitRunnable() {
-	        // Number of points on each circle to show a particle
-	        int circlePoints = 6;
-	        // Maximum radius before shrinking again.
-	        double maxRadius = 1.5;
-	        Location playerLoc = player.getEyeLocation();
-	        World world = playerLoc.getWorld();
-	        // Get the player's looking direction and multiply it by 0.5
-	        // 0.5 is the number of blocks each new ring will be away from the previous ring
-	        final Vector dir = player.getLocation().getDirection().normalize().multiply(0.5);
-	        final double pitch = (playerLoc.getPitch() + 90.0F) * 0.017453292F; // Need these in radians, not degrees or the circle flattens out sometimes
-	        final double yaw = -playerLoc.getYaw() * 0.017453292F; // Need these in radians, not degrees or the circle flattens out sometimes
-	        double increment = (2 * Math.PI) / circlePoints;
-	        // This will be the maximum number of circles in one oscillation before repeating
-	        int maxCircles = 12;
-	        // This is used to calculate the radius for each loop
-	        double t = 0;
-	        double circlePointOffset = 0; // This is used to rotate the circle as the beam progresses
-	        // Max beam length
-	        int beamLength = 100;
-	        @Override
-	        public void run() {
-	            beamLength--;
-	            if(beamLength < 1){
-	                this.cancel();
-	                return;
-	            }
-	            // This calculates the radius for the current circle/ring in the pattern
-	            double radius = Math.sin(t) * maxRadius;
-	            for (int i = 0; i < circlePoints; i++) {
-	                double angle = i * increment + circlePointOffset; // Angle on the circle
-	                double x = radius * Math.cos(angle);
-	                double z = radius * Math.sin(angle);
-	                Vector vec = new Vector(x, 0, z);
-	                rotateAroundAxisX(vec, pitch);
-	                rotateAroundAxisY(vec, yaw);
-	                playerLoc.add(vec);
-	                world.spawnParticle(Particle.FIREWORKS_SPARK, playerLoc, 0); // Reminder to self - the "data" option for a (particle, location, data) is speed, not count!!
-	                playerLoc.subtract(vec);
-	            }
-	            circlePointOffset += increment / 3; // Rotate the circle points each iteration, like rifling in a barrel
-	            if (circlePointOffset >= increment) {
-	                circlePointOffset = 0;
-	            }
-	            t += Math.PI / maxCircles; // Oscillation effect
-	            if (t > Math.PI * 2) {
-	                t = 0;
-	            }
-	            playerLoc.add(dir);
-	        }
-	    }.runTaskTimer((Plugin)this, 0, 1);
-	}
-	public void beamOrbs(Player player){
-	    new BukkitRunnable() {
-	        // Number of points to display, evenly spaced around the circle's radius
-	        int circlePoints = 3;
-	        // How fast should the particles rotate around the center beam
-	        int rotationSpeed = 20;
-	        double radius = 2.5;
-	        Location startLoc = player.getEyeLocation();
-	        World world = startLoc.getWorld();
-	        final Vector dir = player.getLocation().getDirection().normalize().multiply(1);
-	        final double pitch = (startLoc.getPitch() +90.0F) * 0.017453292F;
-	        final double yaw = -startLoc.getYaw() * 0.017453292F;
-	        // Particle offset increment for each loop
-	        double increment = (2 * Math.PI) / rotationSpeed;
-	        double circlePointOffset = 0; // This is used to rotate the circle as the beam progresses
-	        int beamLength = 60;
-	        double radiusShrinkage = radius / (double) ((beamLength + 2) / 2);
-	        @Override
-	        public void run() {
-	            beamLength--;
-	            if(beamLength < 1){
-	                this.cancel();
-	            }
-	            for (int i = 0; i < circlePoints; i++) {
-	                double x =  radius * Math.cos(2 * Math.PI * i / circlePoints + circlePointOffset);
-	                double z =  radius * Math.sin(2 * Math.PI * i / circlePoints + circlePointOffset);
-
-	                Vector vec = new Vector(x, 0, z);
-	                rotateAroundAxisX(vec, pitch);
-	                rotateAroundAxisY(vec, yaw);
-
-	                startLoc.add(vec);
-	                world.spawnParticle(Particle.FLAME, startLoc, 0);
-	                startLoc.subtract(vec);
-	            }
-	            // Always spawn a center particle in the same direction the player was facing.
-	            startLoc.add(dir);
-	            world.spawnParticle(Particle.FIREWORKS_SPARK, startLoc, 0);
-	            startLoc.subtract(dir);
-
-	            // Shrink each circle radius until it's just a point at the end of a long swirling cone
-	            radius -= radiusShrinkage;
-	            if (radius < 0) {
-	                this.cancel();
-	            }
-	           
-	            // Rotate the circle points each iteration, like rifling in a barrel
-	            circlePointOffset += increment;
-	            if (circlePointOffset >= (2 * Math.PI)) {
-	                circlePointOffset = 0;
-	            }
-	            startLoc.add(dir);
-	        }
-	    }.runTaskTimer((Plugin)this, 0, 3);
-	}
-	public void staticbeam(){
-	    new BukkitRunnable() {
-	    	
-	        // Number of points to display, evenly spaced around the circle's radius
-	        //int circlePoints = 3;
-	        // How fast should the particles rotate around the center beam
-	        int rotationSpeed = 20;
-	        double radius = 2.5;
-	        Location startLoc = player.getEyeLocation();
-	        World world = startLoc.getWorld();
-	        final Vector dir = player.getLocation().getDirection().normalize().multiply(1);
-	        //final double pitch = (startLoc.getPitch() +90.0F) * 0.017453292F;
-	        //final double yaw = -startLoc.getYaw() * 0.017453292F;
-	        // Particle offset increment for each loop
-	        double increment = (2 * Math.PI) / rotationSpeed;
-	        double circlePointOffset = 0; // This is used to rotate the circle as the beam progresses
-	        int beamLength = 30;
-	        double radiusShrinkage = radius / (double) ((beamLength + 2) / 2);
-	        
-	        @Override
-	        public void run() {
-	        	
-	            // We are going to draw the entire beam instantly instead of waiting for each tick
-	        	
-	            for (int count = beamLength; count > 1; count--) {
-	            	for (Entity entity : world.getNearbyEntities(startLoc, 5, 5, 5)) {
-	                    if (entity instanceof LivingEntity) {
-	                        if (entity == player) {
-	                            continue;
-	                        }
-	                        Vector particleMinVector = new Vector(
-	                                startLoc.getX() - 0.25,
-	                                startLoc.getY() - 0.25,
-	                                startLoc.getZ() - 0.25);
-	                        Vector particleMaxVector = new Vector(
-	                                startLoc.getX() + 0.25,
-	                                startLoc.getY() + 0.25,
-	                                startLoc.getZ() + 0.25);
-	                        if(entity.getBoundingBox().overlaps(particleMinVector,particleMaxVector)){
-	                            world.spawnParticle(Particle.FLASH, startLoc, 0);
-	                            world.playSound(startLoc,Sound.ENTITY_GENERIC_EXPLODE,2,1);
-	                            entity.setVelocity(entity.getVelocity().add(startLoc.getDirection().normalize().multiply(1.5)));
-	                            ((Damageable) entity).damage(100,player);
-	                            world.spawnParticle(Particle.EXPLOSION_HUGE, startLoc, 0);
-	                            this.cancel();
-	                            return;
-	                        }
-	                    }
-	                }
-	                /*for (int i = 0; i < circlePoints; i++) {
-	                    double x = radius * Math.cos(2 * Math.PI * i / circlePoints + circlePointOffset);
-	                    double z = radius * Math.sin(2 * Math.PI * i / circlePoints + circlePointOffset);
-
-	                    Vector vec = new Vector(x, 0, z);
-	                    rotateAroundAxisX(vec, pitch);
-	                    rotateAroundAxisY(vec, yaw);
-
-	                    startLoc.add(vec);
-	                    world.spawnParticle(Particle.FLAME, startLoc, 0);
-	                    startLoc.subtract(vec);
-	                }*/
-	                
-	                // Always spawn a center particle in the same direction the player was facing.
-	                startLoc.add(dir);
-	                world.spawnParticle(Particle.FLAME, startLoc, 0);
-	                startLoc.subtract(dir);
-
-	                // Shrink each circle radius until it's just a point at the end of a long swirling cone
-	                radius -= radiusShrinkage;
-	                if (radius < 0) {
-	                    this.cancel();
-	                }
-
-	                // Rotate the circle points each iteration, like rifling in a barrel
-	                circlePointOffset += increment;
-	                if (circlePointOffset >= (2 * Math.PI)) {
-	                    circlePointOffset = 0;
-	                }
-	                startLoc.add(dir);
-	            }
-	            
-	        }
-	        
-	    }.runTaskTimer((Plugin)this, 0, 1);
-	}
-	public void blank(){
-		World world = player.getWorld();
-		new BukkitRunnable(){
-			double t = Math.PI/4;
-			Location loc = player.getLocation();
-			public void run(){
-				t = t + 0.1*Math.PI;
-				for (double theta = 0; theta <= 2*Math.PI; theta = theta + Math.PI/32){
-					double x = t*Math.cos(theta);
-					double y = 2*Math.exp(-0.1*t) * Math.sin(t) + 1.5;
-					double z = t*Math.sin(theta);
-					loc.add(x,y,z);
-					world.spawnParticle(Particle.FIREWORKS_SPARK, loc, 1, 0, 0, 0, 0);
-					loc.subtract(x,y,z);
-					
-					theta = theta + Math.PI/64;
-					
-					x = t*Math.cos(theta);
-					y = 2*Math.exp(-0.1*t) * Math.sin(t) + 1.5;
-					z = t*Math.sin(theta);
-					loc.add(x,y,z);
-					world.spawnParticle(Particle.SPELL_WITCH, loc, 1, 0, 0, 0);
-					loc.subtract(x,y,z);
+	public void parser(AsyncPlayerChatEvent event)
+	{
+		String message = event.getMessage();
+		String str[] = message.split(" ");
+		args = Arrays.asList(str);
+		if(args.get(0).contains("create"))
+		{
+			printCreate();
+		}
+		if(args.get(0).contains("particles"))
+		{
+			player.sendMessage("ASH, BARRIER, BLOCK_CRACK, BLOCK_DUST, BUBBLE_COLUMN_UP, BUBBLE_POP, CAMPFIRE_COSY_SMOKE, CAMPFIRE_SIGNAL_SMOKE, CLOUD, COMPOSTER, CRIMSON_SPORE, CRIT, CRIT_MAGIC, CURRENT_DOWN, DAMAGE_INDICATOR, DOLPHIN, DRAGON_BREATH, DRIP_LAVA, DRIP_WATER, DRIPPING_HONEY, DRIPPING_OBSIDIAN_TEAR, ENCHANTMENT_TABLE, END_ROD, EXPLOSION_HUGE, EXPLOSION_LARGE, EXPLOSION_NORMAL, FALLING_DUST, FALLING_HONEY, FALLING_LAVA, FALLING_NECTAR, FALLING_OBSIDIAN_TEAR, FALLING_WATER, FIREWORKS_SPARK, FLAME, FLASH, HEART, ITEM_CRACK, LANDING_HONEY, LANDING_LAVA, LANDING_OBSIDIAN_TEAR, LAVA, LEGACY_BLOCK_CRACK, LEGACY_BLOCK_DUST, LEGACY_FALLING_DUST, MOB_APPEARANCE, NAUTILUS, NOTE, PORTAL, REDSTONE, REVERSE_PORTAL, SLIME, SMOKE_LARGE, SMOKE_NORMAL, SNEEZE, SNOW_SHOVEL, SNOWBALL, SOUL, SOUL_FIRE_FLAME, SPELL, SPELL_INSTANT, SPELL_MOB, SPELL_MOB_AMBIENT, SPELL_WITCH, SPIT, SQUID_INK, SUSPENDED, SUSPENDED_DEPTH, SWEEP_ATTACK, TOTEM, TOWN_AURA, VILLAGER_ANGRY, VILLAGER_HAPPY, WARPED_SPORE, WATER_BUBBLE, WATER_DROP, WATER_SPLASH, WATER_WAKE, WHITE_ASH".toLowerCase());
+		}
+		event.setCancelled(true);
+		//----- Within Editor -----
+		
+		for(int i = 0; i<args.size(); i++)
+		{
+			
+			if(args.get(i).contains("name") && inEditor == true)
+			{
+				player.sendMessage("");
+				player.sendMessage("New Spells name is: " + args.get(i+1));
+				name = args.get(1);
+			}
+			if(args.get(i).contains("particle") && inEditor == true)
+			{
+				player.sendMessage("");
+				System.out.println(i);
+				if(isParticle(i))
+					player.sendMessage("New Spells particle is: Particle." + args.get(i+1).toUpperCase());
+				else
+					System.out.println("No particle!");
+			}
+			if((args.get(i).contains("damage") || args.get(0).contains("dmg")) && inEditor == true)
+			{
+				player.sendMessage("");
+				player.sendMessage("New Spells damage is: " + args.get(i+1));
+				damage = Double.parseDouble(args.get(i+1));
+			}
+			if(args.get(i).contains("effect"))
+			{
+				player.sendMessage("");
+				for(int j = 0; j<spellconfigs.size(); j++)
+				{
+					if(args.get(i+1).equals(spellconfigs.get(j)))
+					{
+						effect = spellconfigs.get(j);
+						player.sendMessage("New Spells effect is: " + args.get(i+1));
+					}
 				}
-				if (t > 20){
-					this.cancel();
+				if(effect.equals(""))
+				{
+					player.sendMessage("Input invalid.");
 				}
 			}
-						
-		}.runTaskTimer((Plugin)this, 0, 1);
+			if((args.get(0).contains("close") || args.get(0).contains("exit") || (args.get(0).contains("leave") || args.get(0).contains("out"))) && inEditor == true)
+			{
+				player.sendMessage("");
+				player.sendMessage("Leaving editor.");
+				inEditor = false;
+				isFinished = true;
+			}
+			if((args.get(0).contains("specs") && inEditor == true))
+			{
+				player.sendMessage("Specs of spell are: name > " + name + " dmg > " + damage);
+			}
+			if(args.get(0).contains("finish") && inEditor == true)
+			{
+				player.sendMessage("");
+				player.sendMessage("Finishing Spell. ");
+				
+				System.out.println(damage);
+				System.out.println(particle);
+				System.out.println(effect);
+				inEditor = false;
+				isFinished = true;
+			}
+		}
+		
+		event.setCancelled(true);
 	}
-	public void starBeam()
+	public boolean isParticle(int i)
 	{
-	    new BukkitRunnable() {	
-	        // Number of points in each circle
-	        int circlePoints = 10;
-	        // radius of the circle
-	        double radius = 5;
-	        // Starting location for the first circle will be the player's eye location
-	        Location playerLoc = player.getEyeLocation();
-	        // We need world for the spawnParticle function
-	        World world = playerLoc.getWorld();
-	        // This is the direction the player is looking, normalized to a length (speed) of 1.
-	        final Vector dir = player.getLocation().getDirection().normalize();
-	        // We need the pitch in radians for the rotate axis function
-	        // We also add 90 degrees to compensate for the non-standard use of pitch degrees in Minecraft.
-	        final double pitch = (playerLoc.getPitch() + 90.0F) * 0.017453292F;
-	        // The yaw is also converted to radians here, but we need to negate it for the function to work properly
-	        final double yaw = -playerLoc.getYaw() * 0.017453292F;
-	        // This is the distance between each point around the circumference of the circle.
-	        double increment = (2 * Math.PI) / circlePoints;
-	        // Max length of the beam..for now
-	        double length = 30;
-	        @Override
-	        public void run() {
-	            length--;
-	            if(length < 1){
-	                this.cancel();
-	                return;
-	            }
-	            // We need to loop to get all of the points on the circle every loop
-	            for (int i = 0; i < circlePoints; i++) {
-	                double angle = i * increment;
-	                double x = radius * Math.cos(angle);
-	                double z = radius * Math.sin(angle);
-	                // Convert that to a 3D Vector where the height is always 0
-	                Vector vec = new Vector(x, 0, z);
-	                // Now rotate the circle point so it's properly aligned no matter where the player is looking:
-	                rotateAroundAxisX(vec, pitch);
-	                rotateAroundAxisY(vec, yaw);
-	                // Add that vector to the player's current location
-	                playerLoc.add(vec);
-	                // Display the particle
-	                world.spawnParticle(Particle.FLAME, playerLoc, 0, 0, 0, 0); // Reminder to self - the "data" option for a (particle, location, data) is speed, not count!!
-	                // Since add() modifies the original variable, we have to subtract() it so the next calculation starts from the same location as this one.
-	                playerLoc.subtract(vec);
-	            }
-	            double radiusShrinkage = radius / (double) ((length) / 5);
-	            radius -= radiusShrinkage;
-                if (radius < 0) {
-                    this.cancel();
-                    return;
-                }
-	            /* We multiplied this by 1 already (using normalize()), ensuring the beam will
-	               travel one block away from the player each loop.
-	             */
-	            
-	            playerLoc.add(dir);
-	            
-	        }
-	        
-	    }.runTaskTimer((Plugin)this, 0, 1);
-	    staticbeam();
+		if(args.get(i+1).contains("barrier"))
+		{
+			particle = Particle.BARRIER;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("cozy"))
+		{
+			particle = Particle.CAMPFIRE_COSY_SMOKE;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("signal"))
+		{
+			particle = Particle.CAMPFIRE_SIGNAL_SMOKE;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("cloud"))
+		{
+			particle = Particle.CLOUD;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("composter"))
+		{
+			particle = Particle.COMPOSTER;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("crit_magic"))
+		{
+			particle = Particle.CRIT_MAGIC;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("crit"))
+		{
+			particle = Particle.CRIT;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("damage_indicator"))
+		{
+			particle = Particle.DAMAGE_INDICATOR;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("dolphin"))
+		{
+			particle = Particle.DOLPHIN;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("dragon"))
+		{
+			particle = Particle.DRAGON_BREATH;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("drip_lava"))
+		{
+			particle = Particle.DRIP_LAVA;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("drip_water"))
+		{
+			particle = Particle.DRIP_WATER;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("dripping_honey"))
+		{
+			particle = Particle.DRIPPING_HONEY;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("enchantment"))
+		{
+			particle = Particle.ENCHANTMENT_TABLE;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("end_rod"))
+		{
+			particle = Particle.END_ROD;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("explosion_huge"))
+		{
+			particle = Particle.EXPLOSION_HUGE;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("explosion_large"))
+		{
+			particle = Particle.EXPLOSION_LARGE;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("explosion"))
+		{
+			particle = Particle.EXPLOSION_NORMAL;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("falling_dustr"))
+		{
+			particle = Particle.FALLING_DUST;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("falling_honey"))
+		{
+			particle = Particle.FALLING_HONEY;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("falling_lava"))
+		{
+			particle = Particle.FALLING_LAVA;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("falling_nectar"))
+		{
+			particle = Particle.FALLING_NECTAR;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("falling_water"))
+		{
+			particle = Particle.FALLING_WATER;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("firework"))
+		{
+			particle = Particle.FIREWORKS_SPARK;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("flame"))
+		{
+			particle = Particle.FLAME;
+			System.out.println(particle);
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("flash"))
+		{
+			particle = Particle.FLASH;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("heart"))
+		{
+			particle = Particle.HEART;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("item_crack"))
+		{
+			particle = Particle.ITEM_CRACK;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("landing_honey"))
+		{
+			particle = Particle.LANDING_HONEY;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("landing_lava"))
+		{
+			particle = Particle.LANDING_LAVA;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("lava"))
+		{
+			particle = Particle.LAVA;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("nautilus"))
+		{
+			particle = Particle.NAUTILUS;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("note"))
+		{
+			particle = Particle.NOTE;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("portal"))
+		{
+			particle = Particle.PORTAL;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("redstone"))
+		{
+			particle = Particle.REDSTONE;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("slime"))
+		{
+			particle = Particle.SLIME;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("smoke_large"))
+		{
+			particle = Particle.SMOKE_LARGE;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("smoke_normal"))
+		{
+			particle = Particle.SMOKE_NORMAL;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("sneeze"))
+		{
+			particle = Particle.SNEEZE;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("snow_shovel"))
+		{
+			particle = Particle.SNOW_SHOVEL;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("spell_instant"))
+		{
+			particle = Particle.SPELL_INSTANT;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("spell_mob"))
+		{
+			particle = Particle.SPELL_MOB;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("spell_mob_ambient"))
+		{
+			particle = Particle.SPELL_MOB_AMBIENT;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("spell_witch"))
+		{
+			particle = Particle.SPELL_WITCH;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("spell"))
+		{
+			particle = Particle.SPELL;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("spit"))
+		{
+			particle = Particle.SPIT;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("squid") || args.get(i+1).contains("ink"))
+		{
+			particle = Particle.SQUID_INK;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("suspended_depth"))
+		{
+			particle = Particle.SUSPENDED_DEPTH;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("suspend"))
+		{
+			particle = Particle.SUSPENDED;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("sweep"))
+		{
+			particle = Particle.SWEEP_ATTACK;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("totem"))
+		{
+			particle = Particle.TOTEM;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("happy"))
+		{
+			particle = Particle.VILLAGER_HAPPY;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("angry"))
+		{
+			particle = Particle.VILLAGER_ANGRY;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("bubble"))
+		{
+			particle = Particle.WATER_BUBBLE;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("drop"))
+		{
+			particle = Particle.WATER_DROP;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("splash"))
+		{
+			particle = Particle.WATER_SPLASH;
+			isParticleSet = true;
+		}
+		else if(args.get(i+1).contains("wake"))
+		{
+			particle = Particle.WATER_WAKE;
+			isParticleSet = true;
+		}
+		else
+		{
+			return false;
+		}
+		return true;
+	}
+	public void printCreate()
+	{
+		for(int k=0; k < 100; k++)
+		{
+			player.sendMessage("");
+		}
+		player.sendMessage("all valid arguments");
+		player.sendMessage("name");
+		player.sendMessage("particle");
+		player.sendMessage("damage");
+		player.sendMessage("effect");
+		player.sendMessage("exit");
+		player.sendMessage("finish");
+	}
+	public void giveItem()
+	{
+		if(player.getInventory().firstEmpty()==-1)
+		{
+			//Inv is full
+			World world = player.getWorld();
+			world.dropItemNaturally(player.getLocation(), getItem());
+			player.sendMessage(ChatColor.GOLD + "TestWand for newly created spell dropped near you");
+		}
+		player.getInventory().addItem(getItem());
+		player.sendMessage(ChatColor.GOLD + "TestWand for newly created spell in your inventory");
+	}
+	public ItemStack getItem()
+	{
+		
+		testWandId = new Random().nextInt((1000000 - 1) + 1) + 1;
+		testwand = new ItemStack(Material.STICK);
+		ItemMeta testWandMeta = testwand.getItemMeta();
+		testWandMeta.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "TestWand " + player.getName() + " " + testWandId);
+		List<String> lore = new ArrayList<String>();
+		lore.add("");
+		lore.add(ChatColor.AQUA + "Item used for testing newly created spell");
+		testWandMeta.setLore(lore);
+		testwand.setItemMeta(testWandMeta);
+		return testwand;
+	}
+	//----------------------------------------------
+	//					Interface
+	//----------------------------------------------
+	public boolean checker()
+	{
+		if(player.getInventory().getItemInMainHand().getType() == Material.STICK)
+		{
+			if(player.getInventory().getItemInMainHand().getItemMeta().getDisplayName().contains(player.getName()))
+			{
+				System.out.println("Passed Checks");
+				return true;
+			}
+		}
+		System.out.println("Failed Checks");
+		return false;
+	}
+	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
+    {
+
+    	//arguments = args;
+    	//command = label;
+    	if(sender instanceof Player)
+    	{
+    		player = (Player)sender;
+        	if(label.equalsIgnoreCase("spell") ) 
+        	{
+        		//initiate console
+        		inEditor = true;
+        		for(int i=0; i < 100; i ++)
+        		{
+        			player.sendMessage("");
+        		}
+        	}
+			
+        	player.sendMessage(ChatColor.AQUA + "" + ChatColor.STRIKETHROUGH + "" + ChatColor.BOLD + "---------------------------------------------");
+            player.sendMessage(ChatColor.AQUA + "                            Spell Terminal          ");
+            player.sendMessage(ChatColor.AQUA + "" + ChatColor.STRIKETHROUGH + "" + ChatColor.BOLD + "---------------------------------------------");
+            player.sendMessage("");
+            player.sendMessage("Welcome to Spell Terminal. Here are the KEYWORDS");
+            player.sendMessage("");
+            sendMessage("create", "Type create to start creating a spell");
+            sendMessage("edit", "Type edit to start editing a spell");
+            sendMessage("showall","Type showall to get all created spells");
+            sendMessage("particles","Type particles to display all valid particle effects");
+            
+            
+            
+    	}
+    	return true;
+    		
+    }
+	public void sendMessage(String desc, String info)
+	{
+		TextComponent message = new TextComponent(desc);
+		message.setColor(ChatColor.BLUE);
+		message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+				new ComponentBuilder(info).color(ChatColor.AQUA).create()));
+		player.spigot().sendMessage(message);	
+	}
+	//----------------------------------------------
+	public Player getPlayer()
+	{
+		return player;
 	}
 	
 }
