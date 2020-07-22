@@ -29,6 +29,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import me.NathanG.Spell.TableGenerator;
+import me.NathanG.Spell.TableGenerator.Alignment;
+import me.NathanG.Spell.TableGenerator.Receiver;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
@@ -36,6 +39,8 @@ import net.md_5.bungee.api.chat.TextComponent;
 
 @SuppressWarnings("unused")
 public class MainSpell extends JavaPlugin implements Listener{
+	String firstKeyword;
+	int editArg;
 	private Connection connection;
 	ItemStack testwand;
 	String effect;
@@ -47,6 +52,15 @@ public class MainSpell extends JavaPlugin implements Listener{
 	double damage;
 	Particle particle;
 	String name;
+	String creator;
+	String doc;
+	String id;
+	String proj;
+	String mana;
+	String cooldwn;
+	String acts;
+	String parts;
+	String fx;
 	boolean inEditor = false;
 	int testWandId;
 	ParticleBeam beam;
@@ -80,6 +94,19 @@ public class MainSpell extends JavaPlugin implements Listener{
 	{
 		
 	}
+	public void cleanUp()
+	{
+		testwand = null;
+		effect = "";
+		player = null;
+		args = new ArrayList<String>();
+		spellconfigs = new ArrayList<String>();
+		isParticleSet = false;
+		damage = 0;
+		Particle particle;
+		String name;
+		int testWandId;
+	}
 	public void shipToSQL() throws SQLException, ClassNotFoundException 
 	{
 		
@@ -87,34 +114,75 @@ public class MainSpell extends JavaPlugin implements Listener{
 	    {
 	    	BukkitRunnable runnable = new BukkitRunnable() 
 	    	{
-	    		
 			   @Override
 			   public void run()
 			   {
-				   Date date = Date.valueOf(LocalDate.now());
-				 	String sql = "insert into allspells(SpellName, Creator, DateOfCreation, Projectile, Mana, Cooldown, Actions, Particles, Effect)"
-					+ "VALUES(?,?,?,?,?,?,?,?,?);";
-					PreparedStatement st;
-					try 
-					{
-						System.out.println("SQL Input: " + name + " " + player.getName() + " " + date + " " + String.valueOf(particle));
-						st = connection.prepareStatement(sql);
-						st.setString(1, name);
-						st.setString(2, player.getName());
-						st.setDate(3, date);
-					    st.setString(4, "Invisble");
-					    st.setInt(5, 0);
-					    st.setInt(6, 0);
-					    st.setString(7, "None");
-					    st.setString(8, String.valueOf(particle));
-					    st.setString(9, effect);
-					    st.executeUpdate();
-					   
-					} 
-					catch (SQLException e) 
-					{
-						e.printStackTrace();
+				   if(firstKeyword == "create")
+				   {
+						Date date = Date.valueOf(LocalDate.now());String sql = "insert into allspells(SpellName, Creator, DateOfCreation, Projectile, Mana, Cooldown, Actions, Particles, Effect)"
+						+ "VALUES(?,?,?,?,?,?,?,?,?);";
+						PreparedStatement st;
+						try 
+						{
+							System.out.println("SQL Input: " + name + " " + player.getName() + " " + date + " " + String.valueOf(particle));
+							st = connection.prepareStatement(sql);
+							st.setString(1, name);
+							st.setString(2, player.getName());
+							st.setDate(3, date);
+							st.setString(4, "Invisible");
+							st.setInt(5, 0);
+							st.setInt(6, 0);
+							st.setString(7, "damage " + damage);
+							st.setString(8, String.valueOf(particle));
+							st.setString(9, effect);
+							st.executeUpdate();
+						}
+						catch (SQLException e) 
+						{
+							e.printStackTrace();
+						}
 					}
+				   else if(firstKeyword == "edit")
+				   {
+						
+						try {
+							String sql = "insert into allspells(SpellName, Creator, DateOfCreation, Projectile, Mana, Cooldown, Actions, Particles, Effect)"
+									+ "VALUES(?,?,?,?,?,?,?,?,?);";
+							PreparedStatement st;
+							Date date = Date.valueOf(LocalDate.now());
+							System.out.println("SQL Input: " + name + " " + player.getName() + " " + date + " " + String.valueOf(particle));
+							st = connection.prepareStatement(sql);
+							st.setString(1, name);
+							st.setString(2, player.getName());
+							st.setDate(3, date);
+							st.setString(4, "Invisible");
+							st.setInt(5, 0);
+							st.setInt(6, 0);
+							st.setString(7, "damage " + damage);
+							st.setString(8, String.valueOf(particle));
+							st.setString(9, effect);
+							st.executeUpdate();
+						} catch (SQLException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+							
+				   }
+				   else if(firstKeyword == "remove")
+				   {
+						
+						try {
+							PreparedStatement rmst = connection.prepareStatement("DELETE FROM allspells WHERE ID = ?;");
+							rmst.setInt(1, editArg);
+							rmst.executeUpdate(); 
+							player.sendMessage("Removed Spell from Database");
+						} catch (SQLException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+							player.sendMessage("Error removing.");
+						}
+						
+				   }
 			   }
 	    	};		 
 	    	runnable.runTaskAsynchronously(this);
@@ -162,27 +230,13 @@ public class MainSpell extends JavaPlugin implements Listener{
         	beam.setParticle(particle);
 			isFinished = false;   
 		}
-    	//StaticBeam staticbeam = new StaticBeam(player, this);
 	}
 	@EventHandler (priority = EventPriority.MONITOR)
     // You can name the function anything you want. "clickAction" is appropriate here.
     public void clickAction(PlayerInteractEvent event) {
-        // The player that triggered the event
         player = event.getPlayer();
-        //beamOrbs orbs = new beamOrbs(player, this);
-    	//DeathStarBeam deathbeam = new DeathStarBeam(player, this);
-    	//Oscillator oscill = new Oscillator(player, this);
-    	
-    	//Spiral spiral = new Spiral(player, this);
-    	//RadialWave wave = new RadialWave(player, this);
-    	//
-        // If the player left-clicked the air, and has an end rod in their hand
-    	//System.out.println(parser.isEditorFinished());
     	if(isFinished && event.getAction() == Action.LEFT_CLICK_AIR)
     	{
-    		//System.out.println("got here");
-    		//parser = new ChatParser(player);
-    		//System.out.println("boolean is editor finished" + parser.isEditorFinished());
     		if(isFinished)
     		{
     			giveItem();
@@ -211,33 +265,18 @@ public class MainSpell extends JavaPlugin implements Listener{
     			beam.particleBeam();
     		}
         }
-        /*else if(event.getAction() == Action.RIGHT_CLICK_AIR && player.getInventory().getItemInMainHand().getType() == Material.END_ROD)
-        {
-        	spiral.spiral();
-        }
-        else if(event.getAction() == Action.RIGHT_CLICK_AIR && player.getInventory().getItemInMainHand().getType() == Material.BLAZE_ROD)
-        {
-        	oscill.oscillation();
-        }
-        else if(event.getAction() == Action.LEFT_CLICK_AIR && player.getInventory().getItemInMainHand().getType() == Material.BLAZE_ROD)
-        {
-        	orbs.orbs();
-        }
-        else if(event.getAction() == Action.LEFT_CLICK_AIR && player.getInventory().getItemInMainHand().getType() == Material.STICK) 
-        {
-        	wave.blank();
-        }
-        else if(event.getAction() == Action.RIGHT_CLICK_AIR && player.getInventory().getItemInMainHand().getType() == Material.STICK) 
-        {
-        	deathbeam.starBeam();
-        }
-        else if(event.getAction() == Action.LEFT_CLICK_AIR)
-        {
-        	staticbeam.staticbeam();
-        	
-        }*/
-        
     }
+	public double canBeParsed(String toParse)
+	{
+		double toReturn = 0;
+		try{
+			toReturn = Double.parseDouble(toParse);
+	    }
+	    catch(Exception e){
+	    	return toReturn;
+	    }
+		return toReturn;
+	}
 	@EventHandler
 	public void parser(AsyncPlayerChatEvent event)
 	{
@@ -246,11 +285,55 @@ public class MainSpell extends JavaPlugin implements Listener{
 		args = Arrays.asList(str);
 		if(args.get(0).contains("create"))
 		{
+			firstKeyword = "create";
 			printCreate();
 		}
 		if(args.get(0).contains("particles"))
 		{
 			player.sendMessage("ASH, BARRIER, BLOCK_CRACK, BLOCK_DUST, BUBBLE_COLUMN_UP, BUBBLE_POP, CAMPFIRE_COSY_SMOKE, CAMPFIRE_SIGNAL_SMOKE, CLOUD, COMPOSTER, CRIMSON_SPORE, CRIT, CRIT_MAGIC, CURRENT_DOWN, DAMAGE_INDICATOR, DOLPHIN, DRAGON_BREATH, DRIP_LAVA, DRIP_WATER, DRIPPING_HONEY, DRIPPING_OBSIDIAN_TEAR, ENCHANTMENT_TABLE, END_ROD, EXPLOSION_HUGE, EXPLOSION_LARGE, EXPLOSION_NORMAL, FALLING_DUST, FALLING_HONEY, FALLING_LAVA, FALLING_NECTAR, FALLING_OBSIDIAN_TEAR, FALLING_WATER, FIREWORKS_SPARK, FLAME, FLASH, HEART, ITEM_CRACK, LANDING_HONEY, LANDING_LAVA, LANDING_OBSIDIAN_TEAR, LAVA, LEGACY_BLOCK_CRACK, LEGACY_BLOCK_DUST, LEGACY_FALLING_DUST, MOB_APPEARANCE, NAUTILUS, NOTE, PORTAL, REDSTONE, REVERSE_PORTAL, SLIME, SMOKE_LARGE, SMOKE_NORMAL, SNEEZE, SNOW_SHOVEL, SNOWBALL, SOUL, SOUL_FIRE_FLAME, SPELL, SPELL_INSTANT, SPELL_MOB, SPELL_MOB_AMBIENT, SPELL_WITCH, SPIT, SQUID_INK, SUSPENDED, SUSPENDED_DEPTH, SWEEP_ATTACK, TOTEM, TOWN_AURA, VILLAGER_ANGRY, VILLAGER_HAPPY, WARPED_SPORE, WATER_BUBBLE, WATER_DROP, WATER_SPLASH, WATER_WAKE, WHITE_ASH".toLowerCase());
+		}
+		if(args.get(0).contains("edit"))
+		{
+			if(args.get(0).contains("edit") && canBeParsed(args.get(1)) != 0 && canBeParsed(args.get(1)) != 0.0)
+			{
+				firstKeyword = "edit";
+				printCreate();
+				getFromSQL();
+				editArg = Integer.parseInt(args.get(1));
+			}
+			else
+			{
+				player.sendMessage("Usage is: edit <id> or edit <spellname>");
+			}
+		}
+		if(args.get(0).contains("remove") || args.get(0).contains("delete"))
+		{
+			if((args.get(0).contains("remove") || args.get(0).contains("delete")) && canBeParsed(args.get(1)) != 0 && canBeParsed(args.get(1)) != 0.0)
+			{
+				firstKeyword = "remove";
+				try {
+					shipToSQL();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				editArg = Integer.parseInt(args.get(1));
+			}
+			else
+			{
+				player.sendMessage("Usage is: remove <id> or edit <spellname>");
+			}
+		}
+		if(args.get(0).contains("showall"))
+		{
+
+			firstKeyword = "getall";
+			try {
+				System.out.println("Here");
+				getFromSQL();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		event.setCancelled(true);
 		//----- Within Editor -----
@@ -327,6 +410,111 @@ public class MainSpell extends JavaPlugin implements Listener{
 		}
 		
 		event.setCancelled(true);
+	}
+	public List<String> getFromSQL()
+	{
+		System.out.println("Here in getFromSQL");
+		if(!firstKeyword.equalsIgnoreCase("getall"))
+		{
+			System.out.println("Here in firs if");
+			List<String> allInput = new ArrayList<String>();
+			try 
+			{
+				 String sql = "SELECT * FROM allspells WHERE ID = ?;"; 
+				 PreparedStatement st;
+				 st = connection.prepareStatement(sql);
+				 if(String.valueOf(args.get(1)).length() != 0)
+					 st.setString(1, String.valueOf(args.get(1)));
+				 else
+					 player.sendMessage("Something went wrong.");
+				 ResultSet result = st.executeQuery();
+		         result.next();
+	        	 name = result.getString("SpellName");
+	        	 creator = result.getString("Creator");
+	        	 doc = result.getString("DateOfCreation");
+	        	 id = result.getString("ID");
+	        	 proj = result.getString("Projectile");
+	        	 mana = result.getString("Mana");
+	        	 cooldwn = result.getString("Cooldown");
+	        	 acts = result.getString("Actions");
+	        	 parts = result.getString("Particles");
+	        	 fx = result.getString("Effect");
+	        	 player.sendMessage(name);
+		         player.sendMessage(creator);
+		         player.sendMessage(doc);
+		         player.sendMessage(id);
+		         player.sendMessage(proj);
+		         player.sendMessage(mana);
+		         player.sendMessage(cooldwn);
+		         player.sendMessage(acts);
+		         player.sendMessage(parts);
+		         player.sendMessage(fx);
+		         allInput.add(name);allInput.add(creator);allInput.add(doc);allInput.add(id);allInput.add(proj);
+		         allInput.add(mana);allInput.add(cooldwn);allInput.add(acts);allInput.add(parts);allInput.add(fx);
+	        	 for(int i = 0;  i<allInput.size(); i++)
+	        	 {
+	        		//String[] msg =  allInput.get(i);
+	        		List<String> split;
+	        		String[] msg = allInput.get(i).split(" ");    			
+	    			split = Arrays.asList(msg);
+	    			System.out.println(split);
+	    			setActionValues(split);
+	        	 }
+			 } 
+			catch(SQLException e) 
+			{
+			     e.printStackTrace();
+			}
+		}
+		else if(firstKeyword.equalsIgnoreCase("getall"))
+		{
+			System.out.println("Here in getall");
+			try {
+				String sql = "select * from allspells;"; 
+				PreparedStatement st;
+				st = connection.prepareStatement(sql);
+				ResultSet result = st.executeQuery();
+				System.out.println("Here before while");
+				for(int k=0; k < 100; k++)
+				{
+					player.sendMessage("");
+				}
+				TableGenerator tg = new TableGenerator(Alignment.LEFT, Alignment.LEFT, Alignment.LEFT, Alignment.LEFT);
+				while(result.next())
+				{
+					System.out.println("Here in while");
+					tg.addRow("§b" + result.getString("SpellName"), "§b" + result.getString("Creator"), "§b" + result.getString("DateOfCreation"), "§b" + result.getString("ID")); 
+				}
+				for (String line : tg.generate(Receiver.CLIENT, false, false)) {
+		         	   player.sendMessage(line);
+		        }
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				System.out.println("Problem");
+			}
+		}
+		else
+		{
+			System.out.println("Didnt pass either case");
+		}
+		return null;
+	}
+	public String setActionValues(List<String> list)
+	{
+		//Checking actions
+		for(int i = 0; i<list.size(); i++)
+		{
+			if(list.get(i).equalsIgnoreCase("damage"))
+			{
+				player.sendMessage(list.get(i+1));
+				damage = Double.parseDouble(list.get(i+1));
+				System.out.println(damage);
+				player.sendMessage(String.valueOf(damage));
+			    return String.valueOf(damage);
+			}
+		}
+		return "Empty";
 	}
 	public boolean isParticle(int i)
 	{
@@ -662,9 +850,6 @@ public class MainSpell extends JavaPlugin implements Listener{
 		testwand.setItemMeta(testWandMeta);
 		return testwand;
 	}
-	//----------------------------------------------
-	//					Interface
-	//----------------------------------------------
 	public boolean checker()
 	{
 		if(player.getInventory().getItemInMainHand().getType() == Material.STICK)
