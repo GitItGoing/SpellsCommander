@@ -69,7 +69,7 @@ public class MainSpell extends JavaPlugin implements Listener{
         username = "root";
         password = "druidmcmysql";    
         try {    
-            openConnection();          
+            shipToSQL();          
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (SQLException e) {
@@ -80,33 +80,58 @@ public class MainSpell extends JavaPlugin implements Listener{
 	{
 		
 	}
-public void openConnection() throws SQLException, ClassNotFoundException {
-    	
+	public void shipToSQL() throws SQLException, ClassNotFoundException 
+	{
+		
 	    if (connection != null && !connection.isClosed()) 
 	    {
-	    	BukkitRunnable runnable = new BukkitRunnable() {
+	    	BukkitRunnable runnable = new BukkitRunnable() 
+	    	{
 	    		
-	    		   @Override
-	    		   public void run(){
-	    			  
-	    		      
-	    		      
-	    		   }
-	    		};		 
-	    		runnable.runTaskAsynchronously(this);
+			   @Override
+			   public void run()
+			   {
+				   Date date = Date.valueOf(LocalDate.now());
+				 	String sql = "insert into allspells(SpellName, Creator, DateOfCreation, Projectile, Mana, Cooldown, Actions, Particles, Effect)"
+					+ "VALUES(?,?,?,?,?,?,?,?,?);";
+					PreparedStatement st;
+					try 
+					{
+						System.out.println("SQL Input: " + name + " " + player.getName() + " " + date + " " + String.valueOf(particle));
+						st = connection.prepareStatement(sql);
+						st.setString(1, name);
+						st.setString(2, player.getName());
+						st.setDate(3, date);
+					    st.setString(4, "Invisble");
+					    st.setInt(5, 0);
+					    st.setInt(6, 0);
+					    st.setString(7, "None");
+					    st.setString(8, String.valueOf(particle));
+					    st.setString(9, effect);
+					    st.executeUpdate();
+					   
+					} 
+					catch (SQLException e) 
+					{
+						e.printStackTrace();
+					}
+			   }
+	    	};		 
+	    	runnable.runTaskAsynchronously(this);
 	    }
 	    else
 	    {
 	    	System.out.println("Failed");
 	    }
-	    synchronized (this) {
+	    synchronized (this) 
+	    {
 	        if (connection != null && !connection.isClosed()) {
 	            return;
 	        }
 	        Class.forName("com.mysql.jdbc.Driver");
 	        connection = DriverManager.getConnection("jdbc:mysql://" + this.host + ":" + this.port + "/" + this.database, this.username, this.password);
-    }
-  }
+	    }
+	}
 	public void spellMaker()
 	{
 		if(effect.equalsIgnoreCase("Spiral"))
@@ -289,6 +314,13 @@ public void openConnection() throws SQLException, ClassNotFoundException {
 				System.out.println(damage);
 				System.out.println(particle);
 				System.out.println(effect);
+				try {
+					shipToSQL();
+				} catch (Exception e) 
+				{
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				inEditor = false;
 				isFinished = true;
 			}
