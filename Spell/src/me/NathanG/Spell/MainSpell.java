@@ -6,6 +6,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -144,13 +145,18 @@ public class MainSpell extends JavaPlugin implements Listener{
 					}
 				   else if(firstKeyword == "edit")
 				   {
-						
-						try {
+						//List<String> allInputs = getFromSQL();
+						//System.out.println(allInputs);
+						try 
+						{
+							PreparedStatement rmst = connection.prepareStatement("DELETE FROM allspells WHERE ID = ?;");
+							rmst.setInt(1, editArg);
+							rmst.executeUpdate(); 
+							PreparedStatement st;
 							String sql = "insert into allspells(SpellName, Creator, DateOfCreation, Projectile, Mana, Cooldown, Actions, Particles, Effect)"
 									+ "VALUES(?,?,?,?,?,?,?,?,?);";
-							PreparedStatement st;
 							Date date = Date.valueOf(LocalDate.now());
-							System.out.println("SQL Input: " + name + " " + player.getName() + " " + date + " " + String.valueOf(particle));
+							System.out.println("SQL Input: " + name + " " + player.getName() + " " + date + " " + String.valueOf(particle) + " " + effect);
 							st = connection.prepareStatement(sql);
 							st.setString(1, name);
 							st.setString(2, player.getName());
@@ -413,11 +419,12 @@ public class MainSpell extends JavaPlugin implements Listener{
 	}
 	public List<String> getFromSQL()
 	{
+		List<String> allInput = new ArrayList<String>();
 		System.out.println("Here in getFromSQL");
 		if(!firstKeyword.equalsIgnoreCase("getall"))
 		{
-			System.out.println("Here in firs if");
-			List<String> allInput = new ArrayList<String>();
+			System.out.println("Here in first if");
+			
 			try 
 			{
 				 String sql = "SELECT * FROM allspells WHERE ID = ?;"; 
@@ -439,19 +446,24 @@ public class MainSpell extends JavaPlugin implements Listener{
 	        	 acts = result.getString("Actions");
 	        	 parts = result.getString("Particles");
 	        	 fx = result.getString("Effect");
-	        	 player.sendMessage(name);
-		         player.sendMessage(creator);
-		         player.sendMessage(doc);
-		         player.sendMessage(id);
-		         player.sendMessage(proj);
-		         player.sendMessage(mana);
-		         player.sendMessage(cooldwn);
-		         player.sendMessage(acts);
-		         player.sendMessage(parts);
-		         player.sendMessage(fx);
+	        	 
+	        	 player.sendMessage(ChatColor.AQUA + "" + ChatColor.STRIKETHROUGH + "" + ChatColor.BOLD + "---------------------------------------------");
+	             player.sendMessage(ChatColor.AQUA + "                            Spell Terminal          ");
+	             player.sendMessage(ChatColor.AQUA + "" + ChatColor.STRIKETHROUGH + "" + ChatColor.BOLD + "---------------------------------------------");
+	        	 player.sendMessage(ChatColor.AQUA + "Name: " + name);
+		         player.sendMessage(ChatColor.AQUA + "Creator: " +creator);
+		         player.sendMessage(ChatColor.AQUA + "DateOfCreation: " +doc);
+		         player.sendMessage(ChatColor.AQUA + "ID: " +id);
+		         player.sendMessage(ChatColor.AQUA + "Projectile: " +proj);
+		         player.sendMessage(ChatColor.AQUA + "Mana: " +mana);
+		         player.sendMessage(ChatColor.AQUA + "Cooldown: " +cooldwn);
+		         player.sendMessage(ChatColor.AQUA + "Actions: " +acts);
+		         player.sendMessage(ChatColor.AQUA + "Particles: " +parts);
+		         player.sendMessage(ChatColor.AQUA + "Effect: " +fx);
 		         allInput.add(name);allInput.add(creator);allInput.add(doc);allInput.add(id);allInput.add(proj);
 		         allInput.add(mana);allInput.add(cooldwn);allInput.add(acts);allInput.add(parts);allInput.add(fx);
-	        	 for(int i = 0;  i<allInput.size(); i++)
+	        	 System.out.println(allInput);
+		         for(int i = 0;  i<allInput.size(); i++)
 	        	 {
 	        		//String[] msg =  allInput.get(i);
 	        		List<String> split;
@@ -498,7 +510,7 @@ public class MainSpell extends JavaPlugin implements Listener{
 		{
 			System.out.println("Didnt pass either case");
 		}
-		return null;
+		return allInput;
 	}
 	public String setActionValues(List<String> list)
 	{
@@ -891,9 +903,6 @@ public class MainSpell extends JavaPlugin implements Listener{
             sendMessage("edit", "Type edit to start editing a spell");
             sendMessage("showall","Type showall to get all created spells");
             sendMessage("particles","Type particles to display all valid particle effects");
-            
-            
-            
     	}
     	return true;
     		
