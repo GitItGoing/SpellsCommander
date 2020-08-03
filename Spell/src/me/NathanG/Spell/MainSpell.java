@@ -149,12 +149,8 @@ public class MainSpell extends JavaPlugin implements Listener{
 						//System.out.println(allInputs);
 						try 
 						{
-							PreparedStatement rmst = connection.prepareStatement("DELETE FROM allspells WHERE ID = ?;");
-							rmst.setInt(1, editArg);
-							rmst.executeUpdate(); 
 							PreparedStatement st;
-							String sql = "insert into allspells(SpellName, Creator, DateOfCreation, Projectile, Mana, Cooldown, Actions, Particles, Effect)"
-									+ "VALUES(?,?,?,?,?,?,?,?,?);";
+							String sql = "update allspells set SpellName = ?, Creator = ?, DateOfCreation = ?, Projectile = ?, Mana = ?, Cooldown = ?, Actions = ?, Particles = ?, Effect = ? where ID = ?;";
 							Date date = Date.valueOf(LocalDate.now());
 							System.out.println("SQL Input: " + name + " " + player.getName() + " " + date + " " + String.valueOf(particle) + " " + effect);
 							st = connection.prepareStatement(sql);
@@ -167,6 +163,7 @@ public class MainSpell extends JavaPlugin implements Listener{
 							st.setString(7, "damage " + damage);
 							st.setString(8, String.valueOf(particle));
 							st.setString(9, effect);
+							st.setInt(10, editArg);
 							st.executeUpdate();
 						} catch (SQLException e) {
 							// TODO Auto-generated catch block
