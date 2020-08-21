@@ -18,6 +18,8 @@ Of course!
 
 Here I create a spell using the Spiral effect and the Flame Particle
 
+![Example](https://media.giphy.com/media/hWjD6g8J8RpJinBye5/giphy.gif)
+
 Here is where to find reference for all the particles and effects
 
 # How do I get the plugin on my server?
