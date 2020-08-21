@@ -10,7 +10,7 @@ Spells allows for creating, editing and deleting spells thanks to a local MySQL 
 
 The plugin comes with 7 presets of spell effects including a static laserbeam, and oscillating wave, a spiral cone and others. Along with compatibility with all 1.15.2 particle effects
 
-This plugin comes with a Mana bar, allowing control on the amounts of spells castable at once
+This plugin comes with a Mana bar, allowing for control on the amount of spells castable at once
 
 # Are there examples of the plugin in use?
 
