@@ -7,15 +7,23 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
-public class beamOrbs {
-	Player player;
-	MainSpell main;
-	public beamOrbs(Player player, MainSpell main)
+public class beamOrbs extends SpellMethods{
+	Player player = super.player;
+	MainSpell main = super.main;
+	double damage = super.damage; 
+	Particle particle = super.particle; //Single Particle
+	int mana = super.mana;
+	double cooldown = super.cooldown;
+	String acts = super.acts;
+	public beamOrbs(Player player, MainSpell main, double damage, Particle particle, int mana, double cooldown, String acts)
 	{
-		this.player = player;
-		this.main = main;
+		super(player, main, damage, particle, mana, cooldown, acts);
 	}
-	public void orbs(){
+	public double getMana()
+	{
+		return mana;
+	}
+	public void spell(){
 	    new BukkitRunnable() {
 	        // Number of points to display, evenly spaced around the circle's radius
 	        int circlePoints = 3;

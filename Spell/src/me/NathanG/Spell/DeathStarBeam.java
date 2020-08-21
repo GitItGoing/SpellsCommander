@@ -7,15 +7,23 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
-public class DeathStarBeam {
-	Player player;
-	MainSpell main;
-	public DeathStarBeam(Player player, MainSpell main)
+public class DeathStarBeam extends SpellMethods{
+	Player player = super.player;
+	MainSpell main = super.main;
+	double damage = super.damage; 
+	Particle particle = super.particle; //Single Particle
+	int mana = super.mana;
+	double cooldown = super.cooldown;
+	String acts = super.acts;
+	public DeathStarBeam(Player player, MainSpell main, double damage, Particle particle, int mana, double cooldown, String acts)
 	{
-		this.player = player;
-		this.main = main;
+		super(player, main, damage, particle, mana, cooldown, acts);
 	}
-	public void starBeam()
+	public double getMana()
+	{
+		return mana;
+	}
+	public void spell()
 	{
 	    new BukkitRunnable() {	
 	        // Number of points in each circle
@@ -76,7 +84,7 @@ public class DeathStarBeam {
 	        }
 	        
 	    }.runTaskTimer(main, 0, 1);
-	    StaticBeam staticbeam = new StaticBeam(main.getPlayer(), main);
-	    staticbeam.staticbeam();
+	    StaticBeam staticbeam = new StaticBeam(player, main, damage, particle, mana, cooldown, acts);
+	    staticbeam.spell();
 	}
 }

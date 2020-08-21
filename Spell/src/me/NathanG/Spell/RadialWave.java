@@ -6,25 +6,23 @@ import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-public class RadialWave {
-	Player player;
-	MainSpell main;
-	double damage;
-	Particle particle;
-	public RadialWave(Player player, MainSpell main)
+public class RadialWave extends SpellMethods{
+	Player player = super.player;
+	MainSpell main = super.main;
+	double damage = super.damage; 
+	Particle particle = super.particle; //Single Particle
+	int mana = super.mana;
+	double cooldown = super.cooldown;
+	String acts = super.acts;
+	public RadialWave(Player player, MainSpell main, double damage, Particle particle, int mana, double cooldown, String acts)
 	{
-		this.player = player;
-		this.main = main;
+		super(player, main, damage, particle, mana, cooldown, acts);
 	}
-	public void setDamage(double dmg)
+	public double getMana()
 	{
-		damage = dmg;
+		return mana;
 	}
-	public void setParticle(Particle particle)
-	{
-		this.particle = particle;
-	}
-	public void blank(){
+	public void spell(){
 		World world = player.getWorld();
 		new BukkitRunnable(){
 			double t = Math.PI/4;

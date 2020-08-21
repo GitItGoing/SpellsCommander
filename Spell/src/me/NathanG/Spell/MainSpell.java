@@ -10,12 +10,15 @@ import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.World;
+import org.bukkit.boss.BossBar;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -25,6 +28,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -41,16 +45,20 @@ import net.md_5.bungee.api.chat.TextComponent;
 @SuppressWarnings("unused")
 public class MainSpell extends JavaPlugin implements Listener{
 	String firstKeyword;
+	boolean canCast;
 	int editArg;
 	private Connection connection;
 	ItemStack testwand;
 	String effect;
 	Player player;
+	public ManaBar manabar;
 	List<String> args;
 	List<String> spellconfigs;
 	boolean isFinished = false;
 	boolean isParticleSet = false;
 	double damage;
+	int trumana;
+	List<String> particles;
 	Particle particle;
 	String name;
 	String creator;
@@ -64,10 +72,7 @@ public class MainSpell extends JavaPlugin implements Listener{
 	String fx;
 	boolean inEditor = false;
 	int testWandId;
-	ParticleBeam beam;
-	Spiral spiral;
-	RadialWave wave;
-	StaticBeam staticbeam;
+	SpellMethods spells;
 	private String host, database, username, password;
     private int port;
 	public void onEnable()
@@ -90,10 +95,20 @@ public class MainSpell extends JavaPlugin implements Listener{
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        //
+        //bar = new ManaBar(this);
+        //bar.createBar();
 	}
 	public void onDisable()
 	{
 		
+	}
+	@EventHandler
+	public void onJoin(PlayerJoinEvent event)
+	{
+		manabar = new ManaBar(this, event.getPlayer());
+		System.out.println("Player Joined");
+		manabar.createBar();
 	}
 	public void cleanUp()
 	{
@@ -131,7 +146,7 @@ public class MainSpell extends JavaPlugin implements Listener{
 							st.setString(2, player.getName());
 							st.setDate(3, date);
 							st.setString(4, "Invisible");
-							st.setInt(5, 0);
+							st.setInt(5, trumana);
 							st.setInt(6, 0);
 							st.setString(7, "damage " + damage);
 							st.setString(8, String.valueOf(particle));
@@ -158,7 +173,7 @@ public class MainSpell extends JavaPlugin implements Listener{
 							st.setString(2, player.getName());
 							st.setDate(3, date);
 							st.setString(4, "Invisible");
-							st.setInt(5, 0);
+							st.setInt(5, trumana);
 							st.setInt(6, 0);
 							st.setString(7, "damage " + damage);
 							st.setString(8, String.valueOf(particle));
@@ -207,31 +222,19 @@ public class MainSpell extends JavaPlugin implements Listener{
 	{
 		if(effect.equalsIgnoreCase("Spiral"))
 		{
-			spiral = new Spiral(player, this);
-			spiral.setDamage(damage);
-        	spiral.setParticle(particle);
-			isFinished = false;
+			spells = new Spiral(player, this, damage, particle, trumana, 0, "Damage");
 		}
 		if(effect.equalsIgnoreCase("Static"))
 		{
-			staticbeam = new StaticBeam(player, this);
-			staticbeam.setDamage(damage);
-        	staticbeam.setParticle(particle);
-			isFinished = false;
+			spells = new StaticBeam(player, this, damage, particle, trumana, 0, "Damage");
 		}
 		if(effect.equalsIgnoreCase("RadialWave"))
 		{
-			wave = new RadialWave(player, this);
-			wave.setDamage(damage);
-        	wave.setParticle(particle);
-			isFinished = false;
+			spells = new RadialWave(player, this, damage, particle, trumana, 0, "Damage");
 		}
 		if(effect.equalsIgnoreCase("Beam"))
 		{
-			beam = new ParticleBeam(player, this);
-        	beam.setDamage(damage);
-        	beam.setParticle(particle);
-			isFinished = false;   
+			spells = new ParticleBeam(player, this, damage, particle, trumana, 0, "Damage");
 		}
 	}
 	@EventHandler (priority = EventPriority.MONITOR)
@@ -243,30 +246,35 @@ public class MainSpell extends JavaPlugin implements Listener{
     		if(isFinished)
     		{
     			giveItem();
-    			System.out.println(isFinished);
-    			System.out.println(damage);
-            	System.out.println("Main Spell: " + particle);
             	spellMaker();
+            	isFinished = false;
     		}		
     	}
     	if(checker() && !isFinished)
     	{
-    		if(effect.equalsIgnoreCase("Spiral"))
-    		{
-    			spiral.spiral();
-    		}
-    		if(effect.equalsIgnoreCase("Static"))
-    		{
-    			staticbeam.staticbeam();
-    		}
-    		if(effect.equalsIgnoreCase("RadialWave"))
-    		{
-    			wave.blank();
-    		}
-    		if(effect.equalsIgnoreCase("Beam"))
-    		{
-    			beam.particleBeam();
-    		}
+    		//System.out.println("Amnt of mana" + trumana);
+    		//System.out.println("Got here");
+    		/*if(effect.equalsIgnoreCase("Spiral"))
+    		{*/
+    		double dmana = trumana;
+    			if(manabar != null && manabar.getProgress() >= (dmana/100))
+    			{
+    				canCast = true;
+    				spells.spell();
+    				manabar.setBarProgress(manabar.getProgress()-(dmana/100));
+    				System.out.println("Updated bar with " + dmana/100);
+    			}
+    			else //if(manabar != null)
+    				System.out.println("No bar detected");
+    			/*else if(manabar.getProgress() >= (trumana/100))
+    			{
+    				player.sendMessage("Not enough mana!");
+    			}
+    			else
+    			{
+    				System.out.println("Unknown problem at line 277");
+    			}*/
+    		//}
         }
     }
 	public double canBeParsed(String toParse)
@@ -364,6 +372,16 @@ public class MainSpell extends JavaPlugin implements Listener{
 				player.sendMessage("");
 				player.sendMessage("New Spells damage is: " + args.get(i+1));
 				damage = Double.parseDouble(args.get(i+1));
+			}
+			if(args.get(i).contains("mana") && inEditor == true)
+			{
+				player.sendMessage("");
+				player.sendMessage("New Spells mana is: " + args.get(i+1));
+				trumana = Integer.parseInt(args.get(i+1));
+				if(trumana > 100 || trumana < 0)
+				{
+					player.sendMessage("Invalid mana. Must be within 0-100");
+				}
 			}
 			if(args.get(i).contains("effect"))
 			{
@@ -520,9 +538,20 @@ public class MainSpell extends JavaPlugin implements Listener{
 				damage = Double.parseDouble(list.get(i+1));
 				System.out.println(damage);
 				player.sendMessage(String.valueOf(damage));
-			    return String.valueOf(damage);
+			    //return String.valueOf(damage);
 			}
 		}
+		/*for(int i = 0; i<list.size(); i++)
+		{
+			if(list.get(i).equalsIgnoreCase("mana"))
+			{
+				player.sendMessage(list.get(i+1));
+				trumana = Integer.parseInt(list.get(i+1));
+				System.out.println(trumana);
+				player.sendMessage(String.valueOf(trumana));
+			    //return String.valueOf(trumana);
+			}
+		}*/
 		return "Empty";
 	}
 	public boolean isParticle(int i)
@@ -830,6 +859,7 @@ public class MainSpell extends JavaPlugin implements Listener{
 		player.sendMessage("particle");
 		player.sendMessage("damage");
 		player.sendMessage("effect");
+		player.sendMessage("mana");
 		player.sendMessage("exit");
 		player.sendMessage("finish");
 	}
@@ -888,18 +918,22 @@ public class MainSpell extends JavaPlugin implements Listener{
         		{
         			player.sendMessage("");
         		}
+        		player.sendMessage(ChatColor.AQUA + "" + ChatColor.STRIKETHROUGH + "" + ChatColor.BOLD + "---------------------------------------------");
+                player.sendMessage(ChatColor.AQUA + "                            Spell Terminal          ");
+                player.sendMessage(ChatColor.AQUA + "" + ChatColor.STRIKETHROUGH + "" + ChatColor.BOLD + "---------------------------------------------");
+                player.sendMessage("");
+                player.sendMessage("Welcome to Spell Terminal. Here are the KEYWORDS");
+                player.sendMessage("");
+                sendMessage("create", "Type create to start creating a spell");
+                sendMessage("edit", "Type edit to start editing a spell");
+                sendMessage("showall","Type showall to get all created spells");
+                sendMessage("particles","Type particles to display all valid particle effects");
         	}
-			
-        	player.sendMessage(ChatColor.AQUA + "" + ChatColor.STRIKETHROUGH + "" + ChatColor.BOLD + "---------------------------------------------");
-            player.sendMessage(ChatColor.AQUA + "                            Spell Terminal          ");
-            player.sendMessage(ChatColor.AQUA + "" + ChatColor.STRIKETHROUGH + "" + ChatColor.BOLD + "---------------------------------------------");
-            player.sendMessage("");
-            player.sendMessage("Welcome to Spell Terminal. Here are the KEYWORDS");
-            player.sendMessage("");
-            sendMessage("create", "Type create to start creating a spell");
-            sendMessage("edit", "Type edit to start editing a spell");
-            sendMessage("showall","Type showall to get all created spells");
-            sendMessage("particles","Type particles to display all valid particle effects");
+        	/*if(label.equalsIgnoreCase("test") ) 
+        	{
+        		bar = new ManaBar(this, player);
+        	}*/
+        	
     	}
     	return true;
     		
@@ -917,6 +951,9 @@ public class MainSpell extends JavaPlugin implements Listener{
 	{
 		return player;
 	}
-	
+	public String getEffect()
+	{
+		return effect;
+	}
 }
 

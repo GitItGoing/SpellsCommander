@@ -12,25 +12,23 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
-public class StaticBeam {
-	Player player;
-	MainSpell main;
-	double damage;
-	Particle particle;
-	public StaticBeam(Player player, MainSpell main)
+public class StaticBeam extends SpellMethods{
+	Player player = super.player;
+	MainSpell main = super.main;
+	double damage = super.damage; 
+	Particle particle = super.particle; //Single Particle
+	int mana = super.mana;
+	double cooldown = super.cooldown;
+	String acts = super.acts;
+	public StaticBeam(Player player, MainSpell main, double damage, Particle particle, int mana, double cooldown, String acts)
 	{
-		this.player = player;
-		this.main = main;
+		super(player, main, damage, particle, mana, cooldown, acts);
 	}
-	public void setDamage(double dmg)
+	public double getMana()
 	{
-		damage = dmg;
+		return mana;
 	}
-	public void setParticle(Particle particle)
-	{
-		this.particle = particle;
-	}
-	public void staticbeam(){
+	public void spell(){
 	    new BukkitRunnable() {
 	    	
 	        // Number of points to display, evenly spaced around the circle's radius
