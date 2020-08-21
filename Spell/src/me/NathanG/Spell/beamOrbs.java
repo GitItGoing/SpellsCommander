@@ -60,7 +60,7 @@ public class beamOrbs extends SpellMethods{
 	            }
 	            // Always spawn a center particle in the same direction the player was facing.
 	            startLoc.add(dir);
-	            world.spawnParticle(Particle.FIREWORKS_SPARK, startLoc, 0);
+	            world.spawnParticle(particle, startLoc, 0);
 	            startLoc.subtract(dir);
 
 	            // Shrink each circle radius until it's just a point at the end of a long swirling cone

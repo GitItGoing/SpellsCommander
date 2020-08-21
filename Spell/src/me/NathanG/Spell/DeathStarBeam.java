@@ -65,7 +65,7 @@ public class DeathStarBeam extends SpellMethods{
 	                // Add that vector to the player's current location
 	                playerLoc.add(vec);
 	                // Display the particle
-	                world.spawnParticle(Particle.FLAME, playerLoc, 0, 0, 0, 0); // Reminder to self - the "data" option for a (particle, location, data) is speed, not count!!
+	                world.spawnParticle(particle, playerLoc, 0, 0, 0, 0); // Reminder to self - the "data" option for a (particle, location, data) is speed, not count!!
 	                // Since add() modifies the original variable, we have to subtract() it so the next calculation starts from the same location as this one.
 	                playerLoc.subtract(vec);
 	            }

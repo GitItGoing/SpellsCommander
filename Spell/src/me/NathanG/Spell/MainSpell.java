@@ -83,6 +83,9 @@ public class MainSpell extends JavaPlugin implements Listener{
 		spellconfigs.add("static");
 		spellconfigs.add("beam");
 		spellconfigs.add("radialwave");
+		spellconfigs.add("deathstarbeam");
+		spellconfigs.add("oscillator");
+		spellconfigs.add("beamorbs");
 		host = "localhost";
         port = 3306;
         database = "spells";
@@ -236,6 +239,18 @@ public class MainSpell extends JavaPlugin implements Listener{
 		{
 			spells = new ParticleBeam(player, this, damage, particle, trumana, 0, "Damage");
 		}
+		if(effect.equalsIgnoreCase("DeathStarBeam"))
+		{
+			spells = new DeathStarBeam(player, this, damage, particle, trumana, 0, "Damage");
+		}
+		if(effect.equalsIgnoreCase("Oscillator"))
+		{
+			spells = new Oscillator(player, this, damage, particle, trumana, 0, "Damage");
+		}
+		if(effect.equalsIgnoreCase("beamorbs"))
+		{
+			spells = new beamOrbs(player, this, damage, particle, trumana, 0, "Damage");
+		}
 	}
 	@EventHandler (priority = EventPriority.MONITOR)
     // You can name the function anything you want. "clickAction" is appropriate here.
@@ -303,6 +318,22 @@ public class MainSpell extends JavaPlugin implements Listener{
 		{
 			player.sendMessage("ASH, BARRIER, BLOCK_CRACK, BLOCK_DUST, BUBBLE_COLUMN_UP, BUBBLE_POP, CAMPFIRE_COSY_SMOKE, CAMPFIRE_SIGNAL_SMOKE, CLOUD, COMPOSTER, CRIMSON_SPORE, CRIT, CRIT_MAGIC, CURRENT_DOWN, DAMAGE_INDICATOR, DOLPHIN, DRAGON_BREATH, DRIP_LAVA, DRIP_WATER, DRIPPING_HONEY, DRIPPING_OBSIDIAN_TEAR, ENCHANTMENT_TABLE, END_ROD, EXPLOSION_HUGE, EXPLOSION_LARGE, EXPLOSION_NORMAL, FALLING_DUST, FALLING_HONEY, FALLING_LAVA, FALLING_NECTAR, FALLING_OBSIDIAN_TEAR, FALLING_WATER, FIREWORKS_SPARK, FLAME, FLASH, HEART, ITEM_CRACK, LANDING_HONEY, LANDING_LAVA, LANDING_OBSIDIAN_TEAR, LAVA, LEGACY_BLOCK_CRACK, LEGACY_BLOCK_DUST, LEGACY_FALLING_DUST, MOB_APPEARANCE, NAUTILUS, NOTE, PORTAL, REDSTONE, REVERSE_PORTAL, SLIME, SMOKE_LARGE, SMOKE_NORMAL, SNEEZE, SNOW_SHOVEL, SNOWBALL, SOUL, SOUL_FIRE_FLAME, SPELL, SPELL_INSTANT, SPELL_MOB, SPELL_MOB_AMBIENT, SPELL_WITCH, SPIT, SQUID_INK, SUSPENDED, SUSPENDED_DEPTH, SWEEP_ATTACK, TOTEM, TOWN_AURA, VILLAGER_ANGRY, VILLAGER_HAPPY, WARPED_SPORE, WATER_BUBBLE, WATER_DROP, WATER_SPLASH, WATER_WAKE, WHITE_ASH".toLowerCase());
 		}
+		if(args.get(0).contains("effects"))
+		{
+			String toPlayer = "";
+			for(int i = 0; i<spellconfigs.size(); i++)
+			{
+				if(i != spellconfigs.size()-1)
+				{
+					toPlayer += spellconfigs.get(i) + ", ";
+				}
+				else
+				{
+					toPlayer += spellconfigs.get(i);
+				}
+			}
+			player.sendMessage(toPlayer);
+		}
 		if(args.get(0).contains("edit"))
 		{
 			if(args.get(0).contains("edit") && canBeParsed(args.get(1)) != 0 && canBeParsed(args.get(1)) != 0.0)
@@ -346,6 +377,7 @@ public class MainSpell extends JavaPlugin implements Listener{
 				e.printStackTrace();
 			}
 		}
+		
 		event.setCancelled(true);
 		//----- Within Editor -----
 		
@@ -928,12 +960,8 @@ public class MainSpell extends JavaPlugin implements Listener{
                 sendMessage("edit", "Type edit to start editing a spell");
                 sendMessage("showall","Type showall to get all created spells");
                 sendMessage("particles","Type particles to display all valid particle effects");
+                sendMessage("effects","Type effects to display all valid spell effects");
         	}
-        	/*if(label.equalsIgnoreCase("test") ) 
-        	{
-        		bar = new ManaBar(this, player);
-        	}*/
-        	
     	}
     	return true;
     		

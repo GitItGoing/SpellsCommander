@@ -61,7 +61,7 @@ public class Oscillator extends SpellMethods{
 	                VectorUtils.rotateAroundAxisX(vec, pitch);
 	                VectorUtils.rotateAroundAxisY(vec, yaw);
 	                playerLoc.add(vec);
-	                world.spawnParticle(Particle.FIREWORKS_SPARK, playerLoc, 0); // Reminder to self - the "data" option for a (particle, location, data) is speed, not count!!
+	                world.spawnParticle(particle, playerLoc, 0); // Reminder to self - the "data" option for a (particle, location, data) is speed, not count!!
 	                playerLoc.subtract(vec);
 	            }
 	            circlePointOffset += increment / 3; // Rotate the circle points each iteration, like rifling in a barrel
