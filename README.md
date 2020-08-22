@@ -38,13 +38,15 @@ https://dev.mysql.com/doc/mysql-installation-excerpt/5.7/en/linux-installation.h
 
 AWS Instances(Such as EC2):
 
-__sudo yum install mysql-server__   //installs mysql on ec2
+```bash
+sudo yum install mysql-server  //installs mysql on ec2
 
-__service mysqld start__  //starts mysql
+service mysqld start //starts mysql
 
-__mysqladmin -u root password [your_new_pwd]__ //changes password so you can remember it (fill your_new_pwd with desired password)
+mysqladmin -u root password [your_new_pwd] //changes password so you can remember it (fill your_new_pwd with desired password)
 
-__mysql -u root -p__ //access mysql terminal
+mysql -u root -p //access mysql terminal
+```
 
 Once you have installed MySQL on your local machine, download the project from here (github), extract it, and __Copy the Spell.jar file into your server's plugin folder.__ No other action is required
 
