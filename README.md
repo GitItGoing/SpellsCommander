@@ -16,12 +16,13 @@ This plugin comes with a Mana bar, allowing for control on the amount of spells 
 
 Of course!
 
-Here I create a spell using the Spiral effect and the Flame Particle
+__Here I create a spell using the Spiral effect and the Flame Particle__
 
 ![Example](https://github.com/GitItGoing/Spells/blob/master/Example1.gif?raw=true)
 
-Here is where to find reference for all the particles and effects
+__Here is where to find reference for all the particles and effects__
 
+![Example2](https://github.com/GitItGoing/Spells/blob/master/Example2.gif?raw=true)
 # How do I get the plugin on my server?
 
 To start, you will need to install MySQL. How to do that can be found here:
