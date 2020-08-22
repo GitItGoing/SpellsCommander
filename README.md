@@ -62,7 +62,7 @@ I developed the plugin on an AWS EC2 Instance, MacOS, and Windows. My preferred 
 
 * More presets
 * More spell actions
-* Use an AWS database, such as the [RDS](https://aws.amazon.com/rds/) that are managed by Amazon  (more expensive, but automatically backed up).
+* Use an AWS database, such as [RDS](https://aws.amazon.com/rds/) that is managed by Amazon  (more expensive, but automatically backed up).
 
 
 
