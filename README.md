@@ -8,7 +8,7 @@ This project was created because I believe that a command line interface is far 
 
 Spells allows for creating, editing and deleting spells thanks to a local MySQL Database for spells. 
 
-The plugin comes with 7 presets of spell effects including a static laserbeam, and oscillating wave, a spiral cone and others. Along with compatibility with all 1.15.2 particle effects
+The plugin comes with 7 presets of spell effects including a static laserbeam, an 3D oscillating wave, a spiral cone and others. Along with compatibility with all 1.15.2 particle effects
 
 This plugin comes with a Mana bar, allowing for control on the amount of spells castable at once
 
