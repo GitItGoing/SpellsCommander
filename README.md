@@ -2,17 +2,19 @@
 
 SpellsCommander is a command line based spell creator plugin for Minecraft 1.15.2
 
-This project was created because I believe that a command line interface is far easier to test, use, and allows for copy and paste of spells from other users.
+This plugin enables Minecraft administrators, creatives and quest developers to create objects with spell-casting abilities using a powerful, simple and efficient interface. Unlike the GUI interfaces preferred by players, the development of spells is far more efficient with a command line.  For example, it is very useful to be able to cut and paste a spell configuration one is testing, vs doing a series of clicks. Command line is loved by Linux developers worldwide during the app creation process and it's now available for spell creation process as well.
 
-During development process it was extremely useful to cut and paste a spell configuration versus doing a series of clicks. The interface is much like a Linux prompt which is loved by developers worldwide during the app creation process.
+# Key features
 
-# What are some features of SpellsCommander?
+SpellsCommander allows for creating, editing and deleting spells using command line
 
-SpellsCommander allows for creating, editing and deleting spells thanks to a local MySQL Database for spells. 
+The spell information is stored in a local SQL database, benefiting from the __[ACID](https://en.wikipedia.org/wiki/ACID)__ properties.  You'd want your saved spells to be available, consistent, isolated and durable, right?
 
-The plugin comes with 7 presets of spell effects including a static laserbeam, an 3D oscillating wave, a spiral cone and others. Along with compatibility with all 1.15.2 particle effects
+The plugin comes with seven presets of spell effects including a static laserbeam, an 3D oscillating wave, a spiral cone and others. 
 
-This plugin comes with a Mana bar, allowing for control on the amount of spells castable at once
+The plugin is compatible with all 1.15.2 particle effects.
+
+This plugin comes with a Mana bar, allowing for control on the amount of spells castable at once.
 
 # Are there examples of the plugin in use?
 
@@ -27,7 +29,7 @@ __Here are some keywords used to help develop your spell__
 ![Example2](https://github.com/GitItGoing/Spells/blob/master/Example2.gif?raw=true)
 # How do I get the plugin on my server?
 
-To start, you will need to install MySQL. How to do that can be found here:
+To start, you will need to install [MySQL](http://www.mysql.com). How to do that can be found here:
 
 Windows:
 https://dev.mysql.com/doc/mysql-installation-excerpt/5.7/en/windows-installation.html
@@ -50,18 +52,17 @@ $ mysqladmin -u root password [your_new_pwd] //changes password so you can remem
 $ mysql -u root -p //access mysql terminal
 ```
 
-Once you have installed MySQL on your local machine, download the project from here (github), extract it, and __Copy the Spell.jar file into your server's plugin folder.__ No other action is required
+Once you have installed MySQL on your local machine, checkout and build the project.  You can also jump right in, putting the pre-built spell.jar file into your server's plugin folder. 
 
 # Development Information
 
-This project was developed for and tested on an AWS EC2 Instance, MacOS, and Windows.
+I developed the plugin on an AWS EC2 Instance, MacOS, and Windows. My preferred setup is the EC2 for the server and Mac for the development and test.
 
 # Some things that could be added
 
 * More presets
 * More spell actions
-* Implementation of a web SQL so the configurator doesn't have to set up MySQL locally
-
+* Use an AWS database, such as the [RDS](https://aws.amazon.com/rds/) that are managed by Amazon  (more expensive, but automatically backed up).
 
 
 
