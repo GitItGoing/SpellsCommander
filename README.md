@@ -2,7 +2,7 @@
 
 SpellsCommander is a command line based spell creator plugin for Minecraft 1.15.2
 
-This plugin enables Minecraft administrators, creatives and quest developers to create objects with spell-casting abilities using a powerful, simple and efficient interface. Unlike the GUI interfaces preferred by players, the development of spells is far more efficient with a command line.  For example, it is very useful to be able to cut and paste a spell configuration one is testing, vs doing a series of clicks. Command line is loved by Linux developers worldwide during the app creation process and it's now available for spell creation process as well.
+This plugin enables Minecraft administrators, creatives and quest developers to create objects with spell-casting abilities using a powerful, simple and efficient interface. Unlike the GUI interfaces preferred by players, the development of spells is far more efficient with a command line.  For example, it is very useful to be able to cut and paste a spell configuration vs doing a series of clicks when testing. Command line is loved by Linux developers worldwide during the app creation process and it's now available for spell creation process as well.
 
 # Key features
 
