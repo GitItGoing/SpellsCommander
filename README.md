@@ -1,10 +1,10 @@
-# What is Spells?
+# What is SpellsCommander?
 
 Spells is a Command Line based Spell creator plugin for Minecraft 1.15.2
 
 This project was created because I believe that a command line interface is far easier to test, use, and allows for copy and paste of spells from other users
 
-# What are some features of Spells?
+# What are some features of SpellsCommander?
 
 Spells allows for creating, editing and deleting spells thanks to a local MySQL Database for spells. 
 
