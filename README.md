@@ -18,7 +18,7 @@ Of course!
 
 Here I create a spell using the Spiral effect and the Flame Particle
 
-![Example](https://media.giphy.com/media/hWjD6g8J8RpJinBye5/giphy.gif)
+![Example](https://github.com/GitItGoing/Spells/blob/master/Example1.gif?raw=true)
 
 Here is where to find reference for all the particles and effects
 
