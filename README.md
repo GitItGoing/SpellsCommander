@@ -1,12 +1,14 @@
 # What is SpellsCommander?
 
-Spells is a Command Line based Spell creator plugin for Minecraft 1.15.2
+SpellsCommander is a command line based spell creator plugin for Minecraft 1.15.2
 
-This project was created because I believe that a command line interface is far easier to test, use, and allows for copy and paste of spells from other users
+This project was created because I believe that a command line interface is far easier to test, use, and allows for copy and paste of spells from other users.
+
+During development process it was extremely useful to cut and paste a spell configuration versus doing a series of clicks. The interface is much like a Linux prompt which is loved by developers worldwide during the app creation process.
 
 # What are some features of SpellsCommander?
 
-Spells allows for creating, editing and deleting spells thanks to a local MySQL Database for spells. 
+SpellsCommander allows for creating, editing and deleting spells thanks to a local MySQL Database for spells. 
 
 The plugin comes with 7 presets of spell effects including a static laserbeam, an 3D oscillating wave, a spiral cone and others. Along with compatibility with all 1.15.2 particle effects
 
