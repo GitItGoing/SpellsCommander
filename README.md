@@ -52,7 +52,7 @@ $ mysqladmin -u root password [your_new_pwd] //changes password so you can remem
 $ mysql -u root -p //access mysql terminal
 ```
 
-Once you have installed MySQL on your local machine, checkout and build the project.  You can also jump right in, putting the pre-built [Spell.jar](https://github.com/GitItGoing/SpellsCommander/raw/master/Spell.jar) file into your server's plugin folder. 
+Once you have installed MySQL on your local machine, checkout and build the project.  You can also jump right in, by putting the pre-built [Spell.jar](https://github.com/GitItGoing/SpellsCommander/raw/master/Spell.jar) file into your server's plugin folder. 
 
 # Development Information
 
